@@ -1,7 +1,7 @@
 import { h, header, fmtTime } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
-import { generateLevel, maxBlocks, buildOcc, fits, setOcc, doorAt, stepsFor, FREE } from './engine.js';
+import { generateLevel, maxBlocks, buildOcc, fits, setOcc, doorAt, stepsFor, FREE, DIFFICULTIES } from './engine.js';
 import { stats } from './stats.js';
 
 const HOME = '#/game/blocks';
@@ -25,6 +25,24 @@ const ARROW = {
 
 export const getSavedGame = () => load(SAVE_KEY, null);
 
+export const cap = s => (s ? s[0].toUpperCase() + s.slice(1) : '');
+
+// Generate off the main thread so the loading screen stays responsive; fall back if workers fail.
+function generateAsync(opts) {
+  return new Promise(resolve => {
+    const fallback = () => setTimeout(() => resolve(generateLevel(opts)), 30);
+    let worker;
+    try {
+      worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
+    } catch {
+      return fallback();
+    }
+    worker.onmessage = e => { worker.terminate(); resolve(e.data); };
+    worker.onerror = () => { worker.terminate(); fallback(); };
+    worker.postMessage(opts);
+  });
+}
+
 const shuffled = a => {
   a = a.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -39,8 +57,11 @@ export function optsFromQuery(query) {
   if (query.get('mode') !== 'custom') {
     const [w, hgt] = SIZES[Math.floor(Math.random() * 5)];
     const max = maxBlocks(w, hgt);
-    const blocks = Math.max(4, Math.round(max * (0.65 + Math.random() * 0.35)));
-    const o = { w, h: hgt, blocks, colours: Math.min(blocks, 3 + Math.floor(Math.random() * 3)), timer: true };
+    const blocks = Math.max(4, Math.round(max * (0.75 + Math.random() * 0.25)));
+    const o = {
+      w, h: hgt, blocks, colours: Math.min(blocks, 3 + Math.floor(Math.random() * 3)),
+      difficulty: Math.random() < 0.5 ? 'medium' : 'hard',
+    };
     for (const ob of OBSTACLES) o[ob.value] = Math.random() < 0.35;
     return o;
   }
@@ -50,7 +71,7 @@ export function optsFromQuery(query) {
   const o = {
     w, h: hgt, blocks,
     colours: Math.min(blocks, 6, Math.max(2, parseInt(query.get('c'), 10) || 4)),
-    timer: query.get('t') === '1',
+    difficulty: DIFFICULTIES.includes(query.get('d')) ? query.get('d') : 'medium',
   };
   const ob = query.get('o') || '';
   for (const x of OBSTACLES) o[x.value] = ob.includes(x.key);
@@ -59,7 +80,7 @@ export function optsFromQuery(query) {
 
 export function customHref(o) {
   const ob = OBSTACLES.filter(x => o[x.value]).map(x => x.key).join('');
-  return `${HOME}/play?mode=custom&s=${o.w}x${o.h}&b=${o.blocks}&c=${o.colours}&o=${ob}&t=${o.timer ? 1 : 0}`;
+  return `${HOME}/play?mode=custom&s=${o.w}x${o.h}&b=${o.blocks}&c=${o.colours}&d=${o.difficulty}&o=${ob}`;
 }
 
 export function mountBoard(el, query) {
@@ -84,18 +105,16 @@ export function mountBoard(el, query) {
   if (saved) {
     start(saved.level, saved.palette, saved);
   } else {
-    // Let the loading screen paint before generating.
-    setTimeout(() => {
+    generateAsync(opts).then(level => {
       if (!alive) return;
-      const level = generateLevel(opts);
       stats.recordStart();
       start(level, shuffled(COLOURS).slice(0, opts.colours));
-    }, 30);
+    });
   }
 
   function start(level, palette, resume) {
     const { w, h: H } = level;
-    bar.querySelector('h1').textContent = `${w}×${H} · ${level.blocks.length} blocks`;
+    bar.querySelector('h1').textContent = `${w}×${H} · ${cap(level.difficulty)}`;
 
     let blocks, occ, cleared, acc, over, history, drag = null;
     const els = [];
@@ -188,23 +207,14 @@ export function mountBoard(el, query) {
       rebuild();
     };
 
-    // Clock: counts up for stats, and down against the level timer if there is one.
+    // Elapsed time, for stats.
     let last = Date.now();
-    const showClock = () => {
-      if (level.timeLimit) {
-        const rem = Math.max(0, level.timeLimit * 1000 - acc);
-        timerEl.textContent = fmtTime(Math.ceil(rem / 1000));
-        timerEl.classList.toggle('low', rem < 10000);
-      } else {
-        timerEl.textContent = fmtTime(Math.floor(acc / 1000));
-      }
-    };
+    const showClock = () => { timerEl.textContent = fmtTime(Math.floor(acc / 1000)); };
     const clock = setInterval(() => {
       const now = Date.now();
       if (!document.hidden && !over) acc += Math.max(0, now - last);
       last = now;
       showClock();
-      if (!over && level.timeLimit && acc >= level.timeLimit * 1000) fail();
     }, 200);
     const onVis = () => { last = Date.now(); };
     document.addEventListener('visibilitychange', onVis);
@@ -344,23 +354,13 @@ export function mountBoard(el, query) {
 
     function win() {
       const seconds = Math.round(acc / 1000);
-      stats.recordWin({ s: seconds, m: mode, w, h: H, b: level.blocks.length });
+      stats.recordWin({ s: seconds, m: mode, w, h: H, b: level.blocks.length, d: level.difficulty });
       finish(h('div', { class: 'win card' },
         h('h2', {}, 'Free at last'),
         h('p', { class: 'win-time' }, fmtTime(seconds)),
         h('div', { class: 'row-btns' },
           h('a', { class: 'btn big', href: nextHref() }, 'Next level'),
           h('a', { class: 'btn big ghost', href: HOME }, 'Menu'))));
-    }
-
-    function fail() {
-      stats.recordFail();
-      finish(h('div', { class: 'win card' },
-        h('h2', {}, 'Out of time'),
-        h('p', { class: 'muted' }, 'Kelsey wins this round.'),
-        h('div', { class: 'row-btns' },
-          h('button', { class: 'btn big', onclick: () => reset() }, 'Try again'),
-          h('a', { class: 'btn big ghost', href: nextHref() }, 'New level'))));
     }
 
     const controls = h('div', { class: 'controls' },

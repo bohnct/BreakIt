@@ -281,7 +281,30 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .bj-frame.done .bj-block { pointer-events: none; }
 @keyframes peel { 40% { transform: scale(1.12); } }
 @keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
-.timer.low { animation: pulse .5s ease-in-out infinite alternate; }
+
+/* Tower game */
+.tw-canvas { display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+
+/* Garlic game */
+.gt-wrap { position: relative; }
+.gt-canvas { display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+.gt-shop {
+  position: absolute; left: 6px; right: 6px; bottom: 6px; margin: 0;
+  max-height: calc(100% - 12px); overflow-y: auto;
+  background: var(--bg); border-color: var(--fg);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.gt-shop[hidden] { display: none; }
+.gt-shop-head { display: flex; justify-content: space-between; align-items: baseline; }
+.gt-coins { font-variant-numeric: tabular-nums; font-weight: 600; }
+.gt-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); padding-top: 8px; }
+.gt-name { display: flex; flex-direction: column; min-width: 0; }
+.gt-name .muted { font-size: 12px; line-height: 1.3; }
+.gt-btns { display: flex; gap: 6px; }
+.gt-up { flex-direction: column; gap: 0; min-height: 40px; padding: 0 10px; line-height: 1.15; }
+.gt-cost { font-size: 11px; opacity: .7; font-variant-numeric: tabular-nums; }
+.btn:disabled { opacity: .3; cursor: default; }
+.btn:disabled:active { background: transparent; color: var(--fg); }
 
 /* Toast */
 #toast {

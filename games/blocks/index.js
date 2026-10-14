@@ -1,9 +1,9 @@
 import { h, header, fmtTime, chips, toggleChips, statTile, breakdown } from '../../js/ui.js';
 import { load, save } from '../../js/storage.js';
 import { summarize } from '../../js/stats.js';
-import { maxBlocks } from './engine.js';
+import { maxBlocks, DIFFICULTIES } from './engine.js';
 import { stats } from './stats.js';
-import { mountBoard, getSavedGame, customHref, SIZES, OBSTACLES } from './board.js';
+import { mountBoard, getSavedGame, customHref, cap, SIZES, OBSTACLES } from './board.js';
 
 export const TITLE = 'Kelsey Blocked Me In Again!';
 const HOME = '#/game/blocks';
@@ -28,7 +28,7 @@ function renderLanding(el) {
     h('nav', { class: 'list' },
       saved && h('a', { class: 'btn big continue', href: `${HOME}/play?resume=1&k=${Date.now()}` },
         h('span', {}, 'Continue'),
-        h('span', { class: 'continue-sub' }, `${saved.level.w}×${saved.level.h} · ${saved.level.blocks.length} blocks · ${fmtTime(saved.acc / 1000)}`)),
+        h('span', { class: 'continue-sub' }, `${saved.level.w}×${saved.level.h} · ${cap(saved.level.difficulty)} · ${fmtTime(saved.acc / 1000)}`)),
       h('a', { class: 'btn big', href: `${HOME}/play?mode=random` }, 'Random level'),
       h('a', { class: 'btn big', href: `${HOME}/custom` }, 'Custom level'),
       h('a', { class: 'btn big ghost', href: `${HOME}/stats` }, 'Stats')),
@@ -36,13 +36,13 @@ function renderLanding(el) {
       h('summary', {}, 'How to play'),
       h('p', {}, 'Kelsey has boxed you in. Drag each block to the door of the same colour on the edge of the board and it slides out.'),
       h('p', {}, 'Blocks can\'t pass through each other, and a block only fits through a door that is at least as wide as the block.'),
-      h('p', {}, 'Arrow blocks only slide the way their arrows point. Iced blocks are stuck until the number of other blocks shown has left. Layered blocks lose their outer colour at a matching door, then need a door for the colour inside.'),
-      h('p', {}, 'With the level timer on, clear the board before time runs out.')));
+      h('p', {}, 'On Medium and Hard levels the blocks are jammed: you\'ll need to shuffle some out of the way before others can get out.'),
+      h('p', {}, 'Arrow blocks only slide the way their arrows point. Iced blocks are stuck until the number of other blocks shown has left. Layered blocks lose their outer colour at a matching door, then need a door for the colour inside.')));
 }
 
 function renderCustom(el) {
   const saved = load(CUSTOM_KEY, {});
-  const cfg = { size: '6x8', blocks: 8, colours: 4, timer: true, obstacles: [], ...saved };
+  const cfg = { size: '6x8', blocks: 10, colours: 4, difficulty: 'medium', obstacles: [], ...saved };
   const obstacles = new Set(cfg.obstacles);
   const dims = () => cfg.size.split('x').map(Number);
 
@@ -62,6 +62,10 @@ function renderCustom(el) {
       chips(SIZES.map(([w, hh]) => ({ value: `${w}x${hh}`, label: `${w}×${hh}` })), cfg.size, 'Board size',
         v => { cfg.size = v; showBlocks(); })),
     h('section', { class: 'card' },
+      h('h2', {}, 'Difficulty'),
+      chips(DIFFICULTIES.map(d => ({ value: d, label: cap(d) })), cfg.difficulty, 'Difficulty', v => { cfg.difficulty = v; }),
+      h('p', { class: 'muted' }, 'Easy: every block can go straight out. Medium: some blocks must be moved out of the way first. Hard: lots of blocks are jammed and need several moves to untangle.')),
+    h('section', { class: 'card' },
       h('h2', {}, 'Blocks'),
       h('div', { class: 'row' },
         h('span', {}, 'Number of blocks'),
@@ -75,15 +79,12 @@ function renderCustom(el) {
     h('section', { class: 'card' },
       h('h2', {}, 'Obstacles'),
       toggleChips(OBSTACLES, obstacles, 'Obstacles')),
-    h('section', { class: 'card' },
-      h('h2', {}, 'Level timer'),
-      chips([{ value: false, label: 'Off' }, { value: true, label: 'On' }], cfg.timer, 'Level timer', v => { cfg.timer = v; })),
     h('div', { class: 'foot' },
       h('button', { class: 'btn big', onclick: () => {
         cfg.obstacles = [...obstacles];
         save(CUSTOM_KEY, cfg);
         const [w, hh] = dims();
-        const o = { w, h: hh, blocks: cfg.blocks, colours: cfg.colours, timer: cfg.timer };
+        const o = { w, h: hh, blocks: cfg.blocks, colours: cfg.colours, difficulty: cfg.difficulty };
         for (const x of OBSTACLES) o[x.value] = obstacles.has(x.value);
         location.hash = customHref(o);
       } }, 'Start')));
@@ -97,13 +98,14 @@ function renderStats(el) {
     h('div', { class: 'stats' },
       statTile('Levels played', st.completed),
       statTile('Started', st.started),
-      statTile('Out of time', st.failed),
+      statTile('Total time', fmtTime(st.results.reduce((a, r) => a + r.s, 0))),
       statTile('Average', fmtTime(all.avg)),
       statTile('Fastest', fmtTime(all.min)),
       statTile('Slowest', fmtTime(all.max))),
     breakdown('By board size', SIZES.map(([w, hh]) => ({
       label: `${w}×${hh}`, sum: summarize(st.results.filter(r => r.w === w && r.h === hh)),
     }))),
+    breakdown('By difficulty', DIFFICULTIES.map(d => ({ label: cap(d), sum: summarize(st.results.filter(r => r.d === d)) }))),
     st.completed ? null : h('p', { class: 'muted center' }, 'Finish a level to see your times here.'),
   ].filter(Boolean));
 }

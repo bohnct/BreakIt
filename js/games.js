@@ -16,6 +16,20 @@ export const games = [
     statsKey: 'games.blocks.stats',
     load: () => import('../games/blocks/index.js'),
   },
+  {
+    id: 'towers',
+    title: 'Kelsey VS Carter',
+    blurb: 'Take every tower',
+    statsKey: 'games.towers.stats',
+    load: () => import('../games/towers/index.js'),
+  },
+  {
+    id: 'garlic',
+    title: 'Protect My Garlic!',
+    blurb: 'Hold off the blocks',
+    statsKey: 'games.garlic.stats',
+    load: () => import('../games/garlic/index.js'),
+  },
 ];
 
 export const getGame = id => games.find(g => g.id === id);

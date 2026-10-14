@@ -5,7 +5,7 @@
 // the door. Layered blocks lose their outer colour at a matching door and stay put as the inner
 // colour. Arrow blocks only slide one way. Iced blocks can't move until enough other blocks have left.
 //
-// Level: { w, h, walls: [cellIndex], doors: [{ side, at, len, colour }], blocks: [Block], timeLimit }
+// Level: { w, h, walls: [cellIndex], doors: [{ side, at, len, colour }], blocks: [Block], difficulty }
 // Block: { cells: [[x, y]], x, y, colour, inner, axis: null | 'h' | 'v', ice }
 // Colours are palette indexes. Sides: 't' top, 'r' right, 'b' bottom, 'l' left.
 
@@ -21,6 +21,9 @@ const SHAPES = [
   [1, [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]]],
 ];
 const SHAPE_TOTAL = SHAPES.reduce((a, s) => a + s[0], 0);
+
+export const DIFFICULTIES = ['easy', 'medium', 'hard'];
+const TARGET = { easy: 0, medium: 1, hard: 2 };
 
 const rand = k => Math.floor(Math.random() * k);
 
@@ -104,70 +107,93 @@ export function doorAt(level, occ, b, id, x, y, colour) {
 const STEPS = { h: [[1, 0], [-1, 0]], v: [[0, 1], [0, -1]], all: [[1, 0], [-1, 0], [0, 1], [0, -1]] };
 export const stepsFor = axis => STEPS[axis || 'all'];
 
-// Every position the block can reach where it would meet a door of `colour`. Door positions are
-// terminal: a dragged block leaves (or peels) the moment it touches one.
-function exitPositions(level, occ, b, id, sx, sy, colour) {
-  const seen = new Set([sy * level.w + sx]);
-  const queue = [[sx, sy]], exits = [];
-  while (queue.length) {
-    const [x, y] = queue.shift();
-    if (doorAt(level, occ, b, id, x, y, colour)) { exits.push([x, y]); continue; }
+// Search the positions a block can slide to as `colour`. Positions that touch one of its doors
+// are terminal (a dragged block leaves or peels the moment it touches one), so they are reported
+// in `doors` but not passed through. `open` lists the other positions, nearest first.
+function explore(level, occ, b, id, sx, sy, colour) {
+  const seen = new Set([sy * 64 + sx]);
+  const queue = [[sx, sy]], open = [], doors = [];
+  for (let qi = 0; qi < queue.length; qi++) {
+    const [x, y] = queue[qi];
     for (const [dx, dy] of stepsFor(b.axis)) {
-      const nx = x + dx, ny = y + dy, key = ny * level.w + nx;
-      if (nx < -6 || ny < -6 || seen.has(key)) continue;
+      const nx = x + dx, ny = y + dy, key = ny * 64 + nx;
+      if (nx < 0 || ny < 0 || seen.has(key)) continue;
       seen.add(key);
-      if (fits(level, occ, b, id, nx, ny)) queue.push([nx, ny]);
+      if (!fits(level, occ, b, id, nx, ny)) continue;
+      if (doorAt(level, occ, b, id, nx, ny, colour)) { doors.push([nx, ny]); continue; }
+      open.push([nx, ny]);
+      queue.push([nx, ny]);
     }
   }
-  return exits;
+  return { open, doors };
 }
 
 // Can block `id` leave the board from where it is now (peeling first if layered)?
 export function canClear(level, occ, blocks, id, cleared = Infinity) {
   const b = blocks[id];
   if (b.ice > cleared) return false;
-  const first = exitPositions(level, occ, b, id, b.x, b.y, b.colour);
+  const first = explore(level, occ, b, id, b.x, b.y, b.colour).doors;
   if (b.inner == null) return first.length > 0;
-  return first.some(([x, y]) => exitPositions(level, occ, b, id, x, y, b.inner).length > 0);
+  return first.some(([x, y]) => explore(level, occ, b, id, x, y, b.inner).doors.length > 0);
 }
 
-// Solve by clearing every block that can leave, round after round. Returns the number of
-// rounds needed, or -1 if it gets stuck. Clearing only ever frees space, so this is reliable.
-export function solveRounds(level) {
+// Clear every block that can leave, again and again. Clearing only ever frees space, so a block
+// that can leave never needs to wait. Returns the new cleared count.
+function clearAll(level, blocks, occ, cleared) {
+  for (let progress = true; progress;) {
+    progress = false;
+    blocks.forEach((b, id) => {
+      if (b.gone || !canClear(level, occ, blocks, id, cleared)) return;
+      setOcc(level, occ, b, FREE);
+      b.gone = true;
+      cleared++;
+      progress = true;
+    });
+  }
+  return cleared;
+}
+
+// How many blocks must be moved out of the way (rather than straight out a door):
+// 0 = none, 1 = one well-chosen move is enough, 2 = more than one. Only used on levels
+// already known to be solvable.
+export function grade(level) {
   const blocks = level.blocks.map(b => ({ ...b, gone: false }));
   const occ = buildOcc(level, blocks);
-  let cleared = 0, left = blocks.length, rounds = 0;
-  while (left > 0) {
-    const ready = blocks.map((b, id) => id).filter(id => !blocks[id].gone && canClear(level, occ, blocks, id, cleared));
-    if (!ready.length) return -1;
-    for (const id of ready) {
-      setOcc(level, occ, blocks[id], FREE);
-      blocks[id].gone = true;
+  const cleared = clearAll(level, blocks, occ, 0);
+  if (blocks.every(b => b.gone)) return 0;
+  for (let id = 0; id < blocks.length; id++) {
+    const b = blocks[id];
+    if (b.gone || b.ice > cleared) continue;
+    for (const [x, y] of explore(level, occ, b, id, b.x, b.y, b.colour).open) {
+      const bs = blocks.map(o => ({ ...o }));
+      const o2 = occ.slice();
+      setOcc(level, o2, bs[id], FREE);
+      bs[id].x = x;
+      bs[id].y = y;
+      setOcc(level, o2, bs[id], id);
+      clearAll(level, bs, o2, cleared);
+      if (bs.every(o => o.gone)) return 1;
     }
-    cleared += ready.length;
-    left -= ready.length;
-    rounds++;
   }
-  return rounds;
+  return 2;
 }
 
 // --- Generation -----------------------------------------------------------
 
 export function maxBlocks(w, h) {
-  return Math.max(3, Math.floor((w * h) * 0.5 / 2.3));
+  return Math.max(3, Math.floor((w * h) * 0.62 / 2.4));
 }
 
 function placeDoors(w, h, colours) {
   const used = { t: new Set(), b: new Set(), l: new Set(), r: new Set() };
   const doors = [];
-  const perColour = colours <= 3 ? 2 : colours <= 5 ? 2 : 1;
   for (let c = 0; c < colours; c++) {
-    const count = Math.max(1, perColour - (Math.random() < 0.3 ? 1 : 0));
+    const count = colours <= 3 && Math.random() < 0.5 ? 2 : 1;
     for (let k = 0; k < count; k++) {
       for (let t = 0; t < 40; t++) {
         const side = 'tbrl'[rand(4)];
         const sideLen = side === 't' || side === 'b' ? w : h;
-        const len = 1 + rand(Math.min(3, sideLen - 1));
+        const len = Math.min(sideLen - 1, [1, 2, 2, 2, 3, 3][rand(6)]);
         const at = rand(sideLen - len + 1);
         let ok = true;
         // Leave a gap of one cell between doors so each reads clearly.
@@ -179,12 +205,67 @@ function placeDoors(w, h, colours) {
       }
     }
   }
-  // Every colour needs at least one door.
   for (let c = 0; c < colours; c++) if (!doors.some(d => d.colour === c)) return null;
   return doors;
 }
 
-function buildOnce(o) {
+const pickFar = list => list[list.length - 1 - rand(Math.max(1, Math.ceil(list.length * 0.6)))];
+
+// Add a block by playing its exit backwards: it appears in one of its doors and slides inward.
+function insertBlock(level, occ, o, n) {
+  const id = level.blocks.length;
+  for (let t = 0; t < 60; t++) {
+    const colour = n < o.colours ? n : rand(o.colours);
+    const b = { cells: randomShape(t < 40 ? 6 : 2), x: 0, y: 0, colour, inner: null, axis: null, ice: 0 };
+    if (o.layers && o.colours > 1 && Math.random() < 0.25) {
+      b.inner = colour;
+      b.colour = (colour + 1 + rand(o.colours - 1)) % o.colours;
+    }
+    if (o.arrows && b.inner == null && Math.random() < 0.25) b.axis = Math.random() < 0.5 ? 'h' : 'v';
+    const last = b.inner ?? b.colour;
+    const starts = [];
+    for (let y = 0; y < level.h; y++) {
+      for (let x = 0; x < level.w; x++) {
+        if (fits(level, occ, b, id, x, y) && doorAt(level, occ, b, id, x, y, last)) starts.push([x, y]);
+      }
+    }
+    if (!starts.length) continue;
+    const [dx, dy] = starts[rand(starts.length)];
+    let spots = explore(level, occ, b, id, dx, dy, last).open;
+    if (b.inner != null) {
+      // Before reaching its inner door the block peeled at an outer door: find one on the way.
+      const peel = spots.filter(([x, y]) => doorAt(level, occ, b, id, x, y, b.colour));
+      if (!peel.length) continue;
+      const [px, py] = peel[rand(peel.length)];
+      spots = explore(level, occ, b, id, px, py, b.colour).open;
+    }
+    if (!spots.length) continue;
+    [b.x, b.y] = pickFar(spots);
+    level.blocks.push(b);
+    setOcc(level, occ, b, id);
+    return true;
+  }
+  return false;
+}
+
+// Slide an existing block somewhere else. Played forwards, this is a move the player has to
+// make to get that block out of someone's way.
+function relocate(level, occ) {
+  for (let t = 0; t < 12; t++) {
+    const id = rand(level.blocks.length), b = level.blocks[id];
+    const spots = explore(level, occ, b, id, b.x, b.y, b.colour).open;
+    if (!spots.length) continue;
+    setOcc(level, occ, b, FREE);
+    [b.x, b.y] = pickFar(spots);
+    setOcc(level, occ, b, id);
+    return id;
+  }
+  return -1;
+}
+
+// Build a level backwards from an empty board, mixing block entries (exits played in reverse)
+// with relocations. Playing the steps in reverse order solves it, so every level is solvable.
+function buildBackwards(o, relocations) {
   const { w, h } = o;
   const doors = placeDoors(w, h, o.colours);
   if (!doors) return null;
@@ -197,59 +278,34 @@ function buildOnce(o) {
     }
   }
   const occ = buildOcc(level, []);
-  for (let n = 0; n < o.blocks; n++) {
-    let placed = false;
-    for (let t = 0; t < 160 && !placed; t++) {
-      const colour = n < o.colours ? n : rand(o.colours);
-      const b = {
-        cells: randomShape(t < 100 ? 6 : 2), x: 0, y: 0, colour, inner: null, axis: null, ice: 0,
-      };
-      if (o.layers && o.colours > 1 && Math.random() < 0.22) {
-        b.inner = colour;
-        b.colour = (colour + 1 + rand(o.colours - 1)) % o.colours;
-      }
-      const bw = Math.max(...b.cells.map(c => c[0])) + 1, bh = Math.max(...b.cells.map(c => c[1])) + 1;
-      if (bw > w || bh > h) continue;
-      b.x = rand(w - bw + 1);
-      b.y = rand(h - bh + 1);
-      // Arrow blocks slide along one line, so put them in line with one of their doors.
-      if (o.arrows && b.inner == null && Math.random() < 0.3) {
-        const own = doors.filter(d => d.colour === b.colour);
-        const d = own[rand(own.length)];
-        const vertical = d.side === 't' || d.side === 'b';
-        const span = vertical ? bw : bh;
-        if (span <= d.len) {
-          b.axis = vertical ? 'v' : 'h';
-          if (vertical) b.x = d.at + rand(d.len - span + 1);
-          else b.y = d.at + rand(d.len - span + 1);
-        }
-      }
-      const id = level.blocks.length;
-      if (!fits(level, occ, b, id, b.x, b.y)) continue;
-      // Don't start a block already sitting in one of its own doors.
-      if (doorAt(level, occ, b, id, b.x, b.y, b.colour)) continue;
-      level.blocks.push(b);
-      setOcc(level, occ, b, id);
-      // Each new block must be able to leave with all earlier blocks still on the board, so
-      // clearing them in reverse order always works.
-      if (canClear(level, occ, level.blocks, id)) {
-        placed = true;
+  const steps = []; // backwards order: { exit: true, id } or { id }
+  let toAdd = o.blocks, toMove = relocations, full = false;
+  for (let guard = 0; guard < 400 && (toAdd > 0 && !full || toMove > 0); guard++) {
+    const add = toAdd > 0 && !full && (level.blocks.length < 2 || Math.random() < toAdd / (toAdd + toMove));
+    if (add) {
+      if (insertBlock(level, occ, o, level.blocks.length)) {
+        steps.push({ exit: true, id: level.blocks.length - 1 });
+        toAdd--;
       } else {
-        level.blocks.pop();
-        setOcc(level, occ, b, FREE);
+        full = true;
       }
+    } else if (level.blocks.length) {
+      const id = relocate(level, occ);
+      if (id >= 0) steps.push({ id });
+      toMove--;
     }
-    if (!placed) break;
   }
   if (level.blocks.length < Math.min(o.blocks, 3)) return null;
-  // Ice: the block cleared k-th from last in the guaranteed order can wait for up to k clears.
+  // Ice: a block can stay frozen until as many blocks have left as leave before its first move.
   if (o.ice) {
-    const B = level.blocks.length;
+    const forward = steps.slice().reverse();
     let iced = 0;
-    for (let i = 0; i < B && iced < 3; i++) {
-      const room = B - 1 - i;
-      if (room >= 2 && Math.random() < 0.35) {
-        level.blocks[i].ice = 1 + rand(Math.min(5, room));
+    for (const id of shuffle([...level.blocks.keys()])) {
+      if (iced >= 3) break;
+      const first = forward.findIndex(s => s.id === id);
+      const before = forward.slice(0, first).filter(s => s.exit).length;
+      if (before >= 1 && Math.random() < 0.5) {
+        level.blocks[id].ice = 1 + rand(Math.min(5, before));
         iced++;
       }
     }
@@ -257,33 +313,38 @@ function buildOnce(o) {
   return level;
 }
 
-// opts: { w, h, blocks, colours, arrows, ice, layers, walls, timer }
-// Builds several solvable candidates and keeps the one that needs the most rounds to clear.
-export function generateLevel(opts, budgetMs = 350) {
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = rand(i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// opts: { w, h, blocks, colours, difficulty, arrows, ice, layers, walls }
+// Builds candidates until one grades at the requested difficulty, keeping the closest otherwise.
+export function generateLevel(opts, budgetMs = 1500) {
+  const target = TARGET[opts.difficulty] ?? 1;
   const t0 = performance.now();
   let best = null;
-  for (let attempt = 0; attempt < 60; attempt++) {
-    const level = buildOnce(opts);
+  for (let attempt = 0; attempt < 500; attempt++) {
+    const moves = target === 0 ? 0 : opts.blocks + rand(opts.blocks * (target === 1 ? 1 : 2));
+    const level = buildBackwards(opts, moves);
     if (level) {
-      const rounds = solveRounds(level);
-      if (rounds > 0) {
-        // Strongly prefer levels that show every obstacle the player switched on.
-        const missing = [
-          o => o.arrows && !level.blocks.some(b => b.axis),
-          o => o.layers && !level.blocks.some(b => b.inner != null),
-          o => o.ice && !level.blocks.some(b => b.ice),
-        ].filter(f => f(opts)).length;
-        const score = rounds * 10 + level.blocks.length * 3 - missing * 100;
-        if (!best || score > best.score) best = { level, score, rounds };
-      }
+      const g = grade(level);
+      const missing = [
+        opts.arrows && !level.blocks.some(b => b.axis),
+        opts.layers && !level.blocks.some(b => b.inner != null),
+        opts.ice && !level.blocks.some(b => b.ice),
+      ].filter(Boolean).length;
+      const score = -Math.abs(g - target) * 1000 - missing * 100 + level.blocks.length * 5;
+      if (!best || score > best.score) best = { level, score, grade: g };
+      if (g === target && !missing && level.blocks.length >= opts.blocks * 0.85) break;
     }
     if (best && performance.now() - t0 > budgetMs) break;
   }
-  if (!best) return null;
-  const { level, rounds } = best;
-  level.rounds = rounds;
-  level.timeLimit = opts.timer
-    ? Math.ceil((25 + level.blocks.length * 7 + level.blocks.filter(b => b.inner != null).length * 5) / 5) * 5
-    : null;
+  const { level, grade: g } = best;
+  level.grade = g;
+  level.difficulty = DIFFICULTIES[g];
   return level;
 }

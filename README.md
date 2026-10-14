@@ -21,9 +21,37 @@ Drag coloured blocks around a walled board to the door of their colour. A block 
   - **Iced blocks** wait until a number of other blocks have left.
   - **Layered blocks** peel to an inner colour at their first door.
   - **Walls** are fixed squares on the board.
-- **Random level:** random board, blocks, colours and obstacles, with a level timer.
-- **Custom level:** pick the board size, number of blocks, colours, obstacles and whether there's a level timer.
-- **Levels:** generated on the device and always solvable. Every block is placed so it can still leave with all earlier blocks in place, and a solver checks each level.
+- **Random level:** Medium or Hard, with a random board, blocks, colours and obstacles.
+- **Custom level:** pick the board size, difficulty, number of blocks, colours and obstacles.
+- **Levels:** generated on the device by playing a solution backwards from an empty board, so every level is solvable. A solver grades each one:
+  - **Easy:** blocks can go straight out.
+  - **Medium:** at least one block must be moved out of the way first.
+  - **Hard:** a single move out of the way isn't enough.
+
+**Kelsey VS Carter**: a remake of Tower War.
+Your towers (green) build up units over time. Drag from a tower to send half its units to another tower. Sweep across several of your towers on the way to send from all of them.
+
+- **Combat:** units knock one off an enemy or neutral tower each and capture it when it runs out. Sending to your own tower reinforces it, and armies meeting head-on cancel out.
+- **Tower levels:** towers level up as they grow, which makes them build units faster.
+- **Map features (optional):**
+  - **Walls** block sending.
+  - **Factories** (square towers) build twice as fast but take double damage.
+- **Rivals:** 1 to 3 computer opponents, which also fight each other.
+  - **Easy:** slow and careless, and you start with extra units.
+  - **Medium:** steady, and defends its towers.
+  - **Hard:** reacts fast, gangs up on targets, and starts with extra units.
+- **Maps:** generated on the device, with the starting area balanced between sides. Two computer players test-play each map, and lopsided maps are thrown away.
+
+**Protect My Garlic!**: a remake of Geometry Tower.
+Blocks march in from every side toward your garlic, and each one that reaches it costs hearts. Your weapons fire automatically; tap a block to make them all focus on it.
+
+- **Shop:** between waves, coins from kills buy a shotgun, sniper or machine gun, plus damage and rate-of-fire upgrades for each weapon, or heal the garlic. Nothing carries over between levels, and you always start with a handgun.
+- **Enemies:** scouts (fast), blocks, brutes (tough), splitters (break into scouts) and a boss on the last wave.
+- **Difficulty:** sets enemy health, numbers and speed, how quickly they get stronger each wave, how many waves there are, and the garlic's hearts.
+- **Random level:** Medium or Hard.
+- **Custom level:** pick the difficulty, number of waves, and whether brutes, splitters and the boss appear.
+
+No game has a countdown timer. Each one shows how long you've been playing, which feeds your stats.
 
 **Settings**
 - **Theme:** Night (black with white accents) or Day (the reverse).
