@@ -11,7 +11,10 @@ const PAD = 14; // frame padding in px; doors sit inside it
 const DOOR = 8; // door thickness in px
 // Colours from the same coolors palette, ordered so the first few are easy to tell apart.
 const COLOURS = ['#f94144', '#f9c74f', '#577590', '#90be6d', '#f8961e', '#43aa8b'];
-export const SIZES = [[5, 5], [6, 6], [6, 8], [7, 7], [7, 9], [8, 8], [8, 10]];
+export const SIZES = [[5, 5], [6, 6], [6, 8], [7, 7], [7, 9], [8, 8], [8, 10], [9, 11]];
+// Random levels: harder means a bigger board, packed fuller.
+const RANDOM_SIZES = { medium: [[6, 8], [7, 7], [7, 9]], hard: [[8, 8], [8, 10], [9, 11]] };
+const RANDOM_FILL = { medium: [0.8, 0.95], hard: [1, 1] };
 export const OBSTACLES = [
   { value: 'arrows', label: 'Arrows', key: 'a' },
   { value: 'ice', label: 'Ice', key: 'i' },
@@ -56,12 +59,13 @@ const shuffled = a => {
 // Level settings from the URL (custom) or picked at random.
 export function optsFromQuery(query) {
   if (query.get('mode') !== 'custom') {
-    const [w, hgt] = SIZES[Math.floor(Math.random() * 5)];
-    const max = maxBlocks(w, hgt);
-    const blocks = Math.max(4, Math.round(max * (0.75 + Math.random() * 0.25)));
+    const difficulty = Math.random() < 0.5 ? 'medium' : 'hard';
+    const sizes = RANDOM_SIZES[difficulty], [lo, hi] = RANDOM_FILL[difficulty];
+    const [w, hgt] = sizes[Math.floor(Math.random() * sizes.length)];
+    const blocks = Math.max(4, Math.round(maxBlocks(w, hgt) * (lo + Math.random() * (hi - lo))));
     const o = {
-      w, h: hgt, blocks, colours: Math.min(blocks, 3 + Math.floor(Math.random() * 3)),
-      difficulty: Math.random() < 0.5 ? 'medium' : 'hard',
+      w, h: hgt, blocks, difficulty,
+      colours: Math.min(blocks, difficulty === 'hard' ? 4 + Math.floor(Math.random() * 3) : 3 + Math.floor(Math.random() * 3)),
     };
     for (const ob of OBSTACLES) o[ob.value] = Math.random() < 0.35;
     return o;

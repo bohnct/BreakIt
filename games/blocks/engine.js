@@ -23,7 +23,6 @@ const SHAPES = [
 const SHAPE_TOTAL = SHAPES.reduce((a, s) => a + s[0], 0);
 
 export const DIFFICULTIES = ['easy', 'medium', 'hard'];
-const TARGET = { easy: 0, medium: 1, hard: 2 };
 
 const rand = k => Math.floor(Math.random() * k);
 
@@ -153,35 +152,45 @@ function clearAll(level, blocks, occ, cleared) {
   return cleared;
 }
 
-// How many blocks must be moved out of the way (rather than straight out a door):
-// 0 = none, 1 = one well-chosen move is enough, 2 = more than one. Only used on levels
-// already known to be solvable.
-export function grade(level) {
-  const blocks = level.blocks.map(b => ({ ...b, gone: false }));
-  const occ = buildOcc(level, blocks);
-  const cleared = clearAll(level, blocks, occ, 0);
-  if (blocks.every(b => b.gone)) return 0;
-  for (let id = 0; id < blocks.length; id++) {
-    const b = blocks[id];
-    if (b.gone || b.ice > cleared) continue;
-    for (const [x, y] of explore(level, occ, b, id, b.x, b.y, b.colour).open) {
-      const bs = blocks.map(o => ({ ...o }));
-      const o2 = occ.slice();
-      setOcc(level, o2, bs[id], FREE);
-      bs[id].x = x;
-      bs[id].y = y;
-      setOcc(level, o2, bs[id], id);
-      clearAll(level, bs, o2, cleared);
-      if (bs.every(o => o.gone)) return 1;
-    }
+// How many times a player has to move a block out of the way, played the way a person would:
+// clear everything that can leave, then make the single move that frees the most blocks, and
+// repeat. Candidate spots are sampled to keep this quick. If no single move frees anything, the
+// level needs moves planned together, which counts as two more.
+export function shuffles(level, maxSteps = 12) {
+  let blocks = level.blocks.map(b => ({ ...b, gone: false }));
+  let occ = buildOcc(level, blocks);
+  let cleared = clearAll(level, blocks, occ, 0);
+  let count = 0;
+  while (!blocks.every(b => b.gone)) {
+    if (count >= maxSteps) return count;
+    let best = null;
+    blocks.forEach((b, id) => {
+      if (b.gone || b.ice > cleared) return;
+      const open = explore(level, occ, b, id, b.x, b.y, b.colour).open;
+      const step = Math.max(1, Math.floor(open.length / 8));
+      for (let k = open.length - 1; k >= 0; k -= step) {
+        const bs = blocks.map(o => ({ ...o })), o2 = occ.slice();
+        setOcc(level, o2, bs[id], FREE);
+        [bs[id].x, bs[id].y] = open[k];
+        setOcc(level, o2, bs[id], id);
+        const c = clearAll(level, bs, o2, cleared);
+        if (c > cleared && (!best || c > best.c)) best = { c, bs, o2 };
+      }
+    });
+    if (!best) return count + 2;
+    ({ bs: blocks, o2: occ, c: cleared } = best);
+    count++;
   }
-  return 2;
+  return count;
 }
+
+// Share of the floor covered by blocks.
+export const fill = level => level.blocks.reduce((a, b) => a + b.cells.length, 0) / (level.w * level.h - level.walls.length);
 
 // --- Generation -----------------------------------------------------------
 
 export function maxBlocks(w, h) {
-  return Math.max(3, Math.floor((w * h) * 0.62 / 2.4));
+  return Math.max(3, Math.floor((w * h) * 0.8 / 2.4));
 }
 
 function placeDoors(w, h, colours) {
@@ -321,30 +330,39 @@ function shuffle(a) {
   return a;
 }
 
+// Moves out of the way each difficulty asks for: Easy none, Medium one or two, Hard three or more.
+const SHUFFLES = { easy: [0, 0], medium: [1, 2], hard: [3, 99] };
+export const difficultyFor = n => (n === 0 ? 'easy' : n <= 2 ? 'medium' : 'hard');
+
 // opts: { w, h, blocks, colours, difficulty, arrows, ice, layers, walls }
-// Builds candidates until one grades at the requested difficulty, keeping the closest otherwise.
-export function generateLevel(opts, budgetMs = 1500) {
-  const target = TARGET[opts.difficulty] ?? 1;
+// Builds candidates within the time budget and keeps the best: the right number of moves out of
+// the way, then the most tangled (for Hard), then the fullest board.
+export function generateLevel(opts, budgetMs = 2500) {
+  const want = opts.difficulty in SHUFFLES ? opts.difficulty : 'medium';
+  const [lo, hi] = SHUFFLES[want];
   const t0 = performance.now();
   let best = null;
-  for (let attempt = 0; attempt < 500; attempt++) {
-    const moves = target === 0 ? 0 : opts.blocks + rand(opts.blocks * (target === 1 ? 1 : 2));
+  for (let attempt = 0; attempt < 400; attempt++) {
+    const moves = want === 'easy' ? 0
+      : want === 'medium' ? opts.blocks + rand(opts.blocks)
+      : opts.blocks * 3 + rand(opts.blocks * 3);
     const level = buildBackwards(opts, moves);
     if (level) {
-      const g = grade(level);
+      const n = want === 'easy' ? 0 : shuffles(level);
       const missing = [
         opts.arrows && !level.blocks.some(b => b.axis),
         opts.layers && !level.blocks.some(b => b.inner != null),
         opts.ice && !level.blocks.some(b => b.ice),
       ].filter(Boolean).length;
-      const score = -Math.abs(g - target) * 1000 - missing * 100 + level.blocks.length * 5;
-      if (!best || score > best.score) best = { level, score, grade: g };
-      if (g === target && !missing && level.blocks.length >= opts.blocks * 0.85) break;
+      const off = n < lo ? lo - n : n > hi ? n - hi : 0;
+      const score = -off * 1000 - missing * 100 + (want === 'hard' ? Math.min(n, 8) * 60 : 0) + fill(level) * 300;
+      if (!best || score > best.score) best = { level, score, n };
+      if (!off && !missing && want !== 'hard' && level.blocks.length >= opts.blocks * 0.85) break;
     }
     if (best && performance.now() - t0 > budgetMs) break;
   }
-  const { level, grade: g } = best;
-  level.grade = g;
-  level.difficulty = DIFFICULTIES[g];
+  const { level, n } = best;
+  level.shuffles = n;
+  level.difficulty = difficultyFor(n);
   return level;
 }

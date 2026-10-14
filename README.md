@@ -21,12 +21,12 @@ Drag coloured blocks around a walled board to the door of their colour. A block 
   - **Iced blocks** wait until a number of other blocks have left.
   - **Layered blocks** peel to an inner colour at their first door.
   - **Walls** are fixed squares on the board.
-- **Random level:** Medium or Hard, with a random board, blocks, colours and obstacles.
-- **Custom level:** pick the board size, difficulty, number of blocks, colours and obstacles.
-- **Levels:** generated on the device by playing a solution backwards from an empty board, so every level is solvable. A solver grades each one:
-  - **Easy:** blocks can go straight out.
-  - **Medium:** at least one block must be moved out of the way first.
-  - **Hard:** a single move out of the way isn't enough.
+- **Random level:** Medium (6×8 to 7×9 boards, mostly full) or Hard (8×8 to 9×11 boards, packed full), with random colours and obstacles.
+- **Custom level:** pick the difficulty, board size (5×5 up to 9×11), number of blocks, colours and obstacles. Picking a difficulty suggests a matching board.
+- **Levels:** generated on the device by playing a solution backwards from an empty board, so every level is solvable. A solver that plays like a person counts how many times you must move a block out of the way:
+  - **Easy:** never.
+  - **Medium:** once or twice.
+  - **Hard:** three or more times, usually five to seven on the big boards.
 
 **Kelsey VS Carter**: a remake of Tower War.
 Your towers (green) build up units over time. Drag from a tower to send half its units to another tower. Sweep across several of your towers on the way to send from all of them.

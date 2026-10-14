@@ -54,16 +54,30 @@ function renderCustom(el) {
   showBlocks();
   const stepBlocks = d => { cfg.blocks += d; showBlocks(); };
 
+  // Picking a difficulty suggests a matching board (still changeable): Hard means big and packed.
+  const SUGGEST = { easy: ['6x6', 0.7], medium: ['7x9', 0.9], hard: ['8x10', 1] };
+  const sizeWrap = h('div');
+  const drawSizes = () => sizeWrap.replaceChildren(
+    chips(SIZES.map(([w, hh]) => ({ value: `${w}x${hh}`, label: `${w}×${hh}` })), cfg.size, 'Board size',
+      v => { cfg.size = v; showBlocks(); }));
+  drawSizes();
+
   el.append(
     header('Custom level', HOME),
     h('section', { class: 'card' },
-      h('h2', {}, 'Board size'),
-      chips(SIZES.map(([w, hh]) => ({ value: `${w}x${hh}`, label: `${w}×${hh}` })), cfg.size, 'Board size',
-        v => { cfg.size = v; showBlocks(); })),
-    h('section', { class: 'card' },
       h('h2', {}, 'Difficulty'),
-      chips(DIFFICULTIES.map(d => ({ value: d, label: cap(d) })), cfg.difficulty, 'Difficulty', v => { cfg.difficulty = v; }),
-      h('p', { class: 'muted' }, 'Easy: every block can go straight out. Medium: some blocks must be moved out of the way first. Hard: lots of blocks are jammed and need several moves to untangle.')),
+      chips(DIFFICULTIES.map(d => ({ value: d, label: cap(d) })), cfg.difficulty, 'Difficulty', v => {
+        cfg.difficulty = v;
+        const [size, share] = SUGGEST[v];
+        cfg.size = size;
+        cfg.blocks = Math.round(maxBlocks(...dims()) * share);
+        drawSizes();
+        showBlocks();
+      }),
+      h('p', { class: 'muted' }, 'Easy: every block can go straight out. Medium: one or two blocks must be moved out of the way first. Hard: a big, packed board where you\'ll need to move blocks aside three or more times to untangle it.')),
+    h('section', { class: 'card' },
+      h('h2', {}, 'Board size'),
+      sizeWrap),
     h('section', { class: 'card' },
       h('h2', {}, 'Blocks'),
       h('div', { class: 'row' },
