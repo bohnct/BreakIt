@@ -335,7 +335,7 @@ export function generateMap(opts) {
   for (let attempt = 0; attempt < 200; attempt++) {
     const map = buildMap(opts);
     if (!map) continue;
-    fallback ??= map;
+    if (!fallback) fallback = map;
     if (fair(map)) return map;
   }
   return fallback;

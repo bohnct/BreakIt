@@ -103,7 +103,7 @@ export function endTrick(g) {
   const t = g.trick, side = team(g, t.winner);
   g.taken[side] += t.plays.reduce((a, x) => a + points(x.c), 0);
   g.tricksWon[side]++;
-  g.won ??= Array(g.players).fill(0);
+  if (!g.won) g.won = Array(g.players).fill(0);
   g.won[t.winner] += t.plays.length;
   g.lastTrick = t;
   g.trick = null;

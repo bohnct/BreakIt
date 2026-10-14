@@ -39,7 +39,20 @@ async function route() {
   const game = parts[0] === 'game' && getGame(parts[1]);
   if (!game) return location.replace('#/');
 
-  const mod = await game.load();
+  let mod;
+  try {
+    mod = await game.load();
+    sessionStorage.removeItem('games.reloaded');
+  } catch (err) {
+    // Usually an app update arrived mid-session and the game's new code doesn't match what's
+    // already loaded. One fresh reload fixes it; don't loop if it doesn't.
+    if (!sessionStorage.getItem('games.reloaded')) {
+      sessionStorage.setItem('games.reloaded', '1');
+      return location.reload();
+    }
+    app.append(header('Couldn\'t open the game', '#/'), h('p', { class: 'muted center' }, 'Close the app completely and open it again.'));
+    return;
+  }
   if (id !== routeId) return;
   current = mod.mount(app, parts.slice(2), query) || null;
 }
@@ -55,5 +68,14 @@ window.addEventListener('hashchange', route);
 route();
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  // When an update takes over, reload once so every file comes from the same version. Games
+  // save themselves on the way out, so nothing is lost. (Skipped on the very first install.)
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloading) return;
+    reloading = true;
+    location.reload();
+  });
+  navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).catch(() => {});
 }

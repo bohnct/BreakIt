@@ -1,5 +1,5 @@
 // Offline cache. Add new files to FILES; bump VERSION to drop old caches.
-const VERSION = 'v8';
+const VERSION = 'v9';
 const CACHE = `games-${VERSION}`;
 const FILES = [
   './',
@@ -51,8 +51,12 @@ const FILES = [
   'icons/apple-touch-icon.png',
 ];
 
+// Install fresh copies straight from the server, never from the browser's HTTP cache, so one
+// version's files are never mixed with another's.
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE)
+    .then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' }))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -62,11 +66,16 @@ self.addEventListener('activate', e => {
       .then(() => self.clients.claim()));
 });
 
-// Network first so updates show up straight away; cached copy when offline.
+// Network first so updates show up straight away; cached copy when offline. 'no-cache' makes the
+// browser check with the server every time instead of reusing a copy GitHub Pages said was good
+// for 10 minutes. Without it a phone could get new scripts with an old stylesheet.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
+  const fresh = e.request.mode === 'navigate'
+    ? fetch(e.request.url, { cache: 'no-cache', credentials: 'same-origin' })
+    : fetch(e.request, { cache: 'no-cache' });
   e.respondWith(
-    fetch(e.request).then(res => {
+    fresh.then(res => {
       if (res.ok) {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, copy));

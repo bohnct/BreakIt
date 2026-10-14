@@ -154,8 +154,9 @@ function candidates(s) {
   return out;
 }
 
-// Depth-first search with a node budget. Returns true if it finds a win.
-export function solvable(start, budget = 60000) {
+// Depth-first search with a node budget and a time limit (phones are much slower than
+// computers). Returns true if it finds a win.
+export function solvable(start, budget = 60000, deadline = Infinity) {
   const seen = new Set();
   const stack = [autoSafe(clone(start))];
   let nodes = 0;
@@ -166,6 +167,7 @@ export function solvable(start, budget = 60000) {
     if (seen.has(k)) continue;
     seen.add(k);
     if (++nodes > budget) return false;
+    if (nodes % 500 === 0 && performance.now() > deadline) return false;
     const next = candidates(s);
     for (let i = next.length - 1; i >= 0; i--) stack.push(autoSafe(apply(s, next[i])));
   }
@@ -173,14 +175,13 @@ export function solvable(start, budget = 60000) {
 }
 
 // opts: { draw: 1 | 3, passes: -1 (unlimited) | n, winnable: bool }
-export function newDeal(opts, budgetMs = 2500) {
-  const t0 = performance.now();
-  let last = null;
+// Keeps dealing until the solver wins one, within budgetMs overall.
+export function newDeal(opts, budgetMs = 4000) {
+  const end = performance.now() + budgetMs;
   for (;;) {
     const s = deal(opts);
     if (!opts.winnable) return { state: s, checked: false };
-    if (solvable(s)) return { state: s, checked: true };
-    last = s;
-    if (performance.now() - t0 > budgetMs) return { state: last, checked: false };
+    if (solvable(s, 60000, end)) return { state: s, checked: true };
+    if (performance.now() > end) return { state: s, checked: false };
   }
 }

@@ -23,19 +23,38 @@ export function optsFromQuery(query) {
 
 export const customHref = o => `${HOME}/play?mode=custom&d=${o.draw}&p=${o.passes}&w=${o.winnable ? 1 : 0}`;
 
-// Deal off the main thread: checking a deal is winnable can take a moment.
+// Deal off the main thread: checking a deal is winnable can take a moment. If the worker can't
+// run or goes quiet, fall back to a quick check here so the game always opens within seconds.
 function dealAsync(opts) {
   return new Promise(resolve => {
-    const fallback = () => setTimeout(() => resolve(newDeal(opts)), 30);
+    let done = false;
+    const finish = r => { if (!done) { done = true; resolve(r); } };
+    const fallback = () => setTimeout(() => finish(newDeal(opts, 600)), 30);
     let worker;
     try {
       worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
     } catch {
       return fallback();
     }
-    worker.onmessage = e => { worker.terminate(); resolve(e.data); };
-    worker.onerror = () => { worker.terminate(); fallback(); };
+    const watchdog = setTimeout(() => { worker.terminate(); fallback(); }, 7000);
+    worker.onmessage = e => { clearTimeout(watchdog); worker.terminate(); finish(e.data); };
+    worker.onerror = () => { clearTimeout(watchdog); worker.terminate(); fallback(); };
     worker.postMessage(opts);
+  });
+}
+
+// A winnable deal is prepared in the background while you play, so the next game opens at once.
+const NEXT_KEY = 'games.solitaire.next';
+const optsKey = o => `${o.draw}/${o.passes}/${o.winnable ? 1 : 0}`;
+function takePrepared(opts) {
+  const next = load(NEXT_KEY, null);
+  if (!next || next.key !== optsKey(opts)) return null;
+  remove(NEXT_KEY);
+  return next.state;
+}
+function prepareNext(opts) {
+  dealAsync(opts).then(({ state, checked }) => {
+    if (checked || !opts.winnable) save(NEXT_KEY, { key: optsKey(opts), state });
   });
 }
 
@@ -48,6 +67,9 @@ export function mountBoard(el, query) {
   const saved = query.get('resume') ? getSavedGame() : null;
   const mode = saved ? saved.mode : query.get('mode') === 'custom' ? 'custom' : 'random';
   const opts = saved ? saved.opts : optsFromQuery(query);
+  // A random game uses whichever random-style deal is already prepared, draw 1 or 3.
+  const waiting = load(NEXT_KEY, null);
+  if (!saved && mode === 'random' && waiting?.key.endsWith('/-1/1')) opts.draw = +waiting.key[0];
 
   let alive = true;
   const cleanups = [];
@@ -63,13 +85,19 @@ export function mountBoard(el, query) {
   cleanups.push(playtimer.onTick(showLimit));
 
   remove(SAVE_KEY); // resumed, or replaced by this new game
+  const ready = saved ? null : takePrepared(opts);
   if (saved) {
     start(saved.initial, saved.state, saved.acc);
+  } else if (ready) {
+    stats.recordStart();
+    start(ready);
+    prepareNext(opts);
   } else {
     dealAsync(opts).then(({ state }) => {
       if (!alive) return;
       stats.recordStart();
       start(state);
+      prepareNext(opts);
     });
   }
 
@@ -111,7 +139,7 @@ export function mountBoard(el, query) {
     const tabY = () => ch + GAP * 3;
 
     function columnOffsets(p) {
-      const maxH = Math.max(ch * 2, window.innerHeight - table.getBoundingClientRect().top - tabY() - 110);
+      const maxH = Math.max(ch * 2, window.innerHeight - table.getBoundingClientRect().top - tabY() - 30);
       let down = ch * 0.14, up = ch * 0.3;
       const need = p.reduce((a, c, i) => a + (i === p.length - 1 ? 0 : c < 0 ? down : up), 0) + ch;
       if (need > maxH) {
