@@ -32,6 +32,52 @@ export function toast(msg, ms = 2600) {
   toastTimer = setTimeout(() => el.classList.remove('show'), ms);
 }
 
+// Single-choice pill buttons. options: [{ value, label }]
+export function chips(options, value, label, onPick) {
+  const wrap = h('div', { class: 'chips', role: 'radiogroup', 'aria-label': label });
+  const draw = v => {
+    wrap.replaceChildren(...options.map(o => h('button', {
+      class: 'chip' + (o.value === v ? ' on' : ''), role: 'radio', 'aria-checked': String(o.value === v),
+      onclick: () => { onPick(o.value); draw(o.value); },
+    }, o.label)));
+  };
+  draw(value);
+  return wrap;
+}
+
+// Multi-choice pill buttons. selected: Set of values, updated in place.
+export function toggleChips(options, selected, label) {
+  return h('div', { class: 'chips', role: 'group', 'aria-label': label },
+    options.map(o => {
+      const btn = h('button', {
+        class: 'chip' + (selected.has(o.value) ? ' on' : ''), 'aria-pressed': String(selected.has(o.value)),
+        onclick: () => {
+          if (selected.has(o.value)) selected.delete(o.value); else selected.add(o.value);
+          btn.classList.toggle('on', selected.has(o.value));
+          btn.setAttribute('aria-pressed', String(selected.has(o.value)));
+        },
+      }, o.label);
+      return btn;
+    }));
+}
+
+export function statTile(label, value) {
+  return h('div', { class: 'stat' }, h('span', { class: 'stat-val' }, value), h('span', { class: 'stat-lbl' }, label));
+}
+
+// Table of completion times per group. groups: [{ label, sum }] where sum comes from summarize().
+export function breakdown(title, groups) {
+  const rows = groups.filter(g => g.sum.count);
+  if (!rows.length) return null;
+  return h('section', { class: 'card' },
+    h('h2', {}, title),
+    h('table', { class: 'table' },
+      h('thead', {}, h('tr', {}, ['', 'Done', 'Avg', 'Min', 'Max'].map(t => h('th', {}, t)))),
+      h('tbody', {}, rows.map(g => h('tr', {},
+        h('td', {}, g.label), h('td', {}, g.sum.count),
+        h('td', {}, fmtTime(g.sum.avg)), h('td', {}, fmtTime(g.sum.min)), h('td', {}, fmtTime(g.sum.max)))))));
+}
+
 export function fmtTime(sec) {
   if (sec == null || !isFinite(sec)) return '–';
   sec = Math.round(sec);

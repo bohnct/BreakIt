@@ -5,7 +5,7 @@ import { load, save } from './storage.js';
 const SETTINGS_KEY = 'app.settings';
 const ELAPSED_KEY = 'app.playtime';
 
-export const DEFAULT_SETTINGS = { limitEnabled: false, limitMinutes: 15 };
+export const DEFAULT_SETTINGS = { limitEnabled: false, limitMinutes: 15, theme: 'night' };
 
 export function getSettings() {
   return { ...DEFAULT_SETTINGS, ...load(SETTINGS_KEY, {}) };

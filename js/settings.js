@@ -1,11 +1,12 @@
 import { games } from './games.js';
-import { h, header, toast, fmtTime } from './ui.js';
+import { h, header, toast, fmtTime, chips } from './ui.js';
+import { applyTheme } from './theme.js';
 import { remove } from './storage.js';
 import * as playtimer from './playtimer.js';
 
 const STEPS = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180];
 
-export const APP_VERSION = '1.0.0';
+export const APP_VERSION = '1.1.0';
 
 export function renderSettings(el) {
   const s = playtimer.getSettings();
@@ -41,6 +42,12 @@ export function renderSettings(el) {
 
   el.append(
     header('Settings', '#/'),
+    h('section', { class: 'card' },
+      h('h2', {}, 'Theme'),
+      chips([{ value: 'night', label: 'Night' }, { value: 'day', label: 'Day' }], s.theme, 'Theme', v => {
+        playtimer.setSettings({ theme: v });
+        applyTheme(v);
+      })),
     h('section', { class: 'card' },
       h('h2', {}, 'Play time limit'),
       h('p', { class: 'muted' }, 'When time runs out you are sent back to the main menu. Your game is saved so you can continue it later.'),

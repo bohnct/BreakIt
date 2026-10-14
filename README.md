@@ -4,7 +4,7 @@ A minimal black-and-white puzzle app, built as a PWA so it installs to a phone's
 
 ## Games
 
-**Carter, stop hiding my sh@&!**: a remake of Meowdoku where you hunt frying pans instead of cats.
+**Carter, Stop Hiding My Shit!**: a remake of Meowdoku where you hunt frying pans instead of cats.
 Place one pan in every row, every column and every colour region. Pans never touch, not even diagonally.
 Tap a square once for ✕, twice for a pan. Drag to mark ✕ on many squares.
 
@@ -13,7 +13,21 @@ Tap a square once for ✕, twice for a pan. Drag to mark ✕ on many squares.
 - **Stats:** levels played, plus average, fastest and slowest times, overall and by size and difficulty.
 - **Puzzles:** generated on the device, always with exactly one solution, and graded by the deductions they need.
 
-**Settings**: an optional play-time limit. When it runs out you are sent back to the main menu.
+**Kelsey Blocked Me In Again!**: a remake of Color Block Jam.
+Drag coloured blocks around a walled board to the door of their colour. A block leaves when it touches a matching door that is at least as wide as the block.
+
+- **Obstacles (optional):**
+  - **Arrow blocks** only slide one way.
+  - **Iced blocks** wait until a number of other blocks have left.
+  - **Layered blocks** peel to an inner colour at their first door.
+  - **Walls** are fixed squares on the board.
+- **Random level:** random board, blocks, colours and obstacles, with a level timer.
+- **Custom level:** pick the board size, number of blocks, colours, obstacles and whether there's a level timer.
+- **Levels:** generated on the device and always solvable. Every block is placed so it can still leave with all earlier blocks in place, and a solver checks each level.
+
+**Settings**
+- **Theme:** Night (black with white accents) or Day (the reverse).
+- **Play-time limit (optional):** when it runs out you are sent back to the main menu. The game in progress is saved, and a Continue button appears on that game's page.
 
 ## Run locally
 

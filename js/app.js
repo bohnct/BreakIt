@@ -2,6 +2,9 @@ import { games, getGame } from './games.js';
 import { h, header, toast } from './ui.js';
 import * as playtimer from './playtimer.js';
 import { renderSettings } from './settings.js';
+import { applyTheme } from './theme.js';
+
+applyTheme(playtimer.getSettings().theme);
 
 const app = document.getElementById('app');
 let current = null;

@@ -1,5 +1,5 @@
 // Offline cache. Add new files to FILES; bump VERSION to drop old caches.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `games-${VERSION}`;
 const FILES = [
   './',
@@ -10,8 +10,14 @@ const FILES = [
   'js/games.js',
   'js/playtimer.js',
   'js/settings.js',
+  'js/stats.js',
   'js/storage.js',
+  'js/theme.js',
   'js/ui.js',
+  'games/blocks/index.js',
+  'games/blocks/board.js',
+  'games/blocks/engine.js',
+  'games/blocks/stats.js',
   'games/pans/index.js',
   'games/pans/board.js',
   'games/pans/generator.js',

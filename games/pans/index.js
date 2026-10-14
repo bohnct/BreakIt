@@ -1,10 +1,10 @@
-import { h, header, fmtTime } from '../../js/ui.js';
+import { h, header, fmtTime, chips, statTile, breakdown } from '../../js/ui.js';
 import { load, save } from '../../js/storage.js';
 import { DIFFICULTIES } from './generator.js';
 import { getStats, summarize } from './stats.js';
 import { mountBoard, getSavedGame } from './board.js';
 
-export const TITLE = 'Carter, stop hiding my sh@&!';
+export const TITLE = 'Carter, Stop Hiding My Shit!';
 const HOME = '#/game/pans';
 const SIZES = [5, 6, 7, 8, 9, 10];
 const CUSTOM_KEY = 'games.pans.custom';
@@ -41,18 +41,6 @@ function renderLanding(el) {
       h('p', {}, 'Tap a square once to mark ✕, twice to place a pan, three times to clear. Drag across squares to mark lots of ✕ at once.')));
 }
 
-function chips(options, value, label, onPick) {
-  const wrap = h('div', { class: 'chips', role: 'radiogroup', 'aria-label': label });
-  const draw = v => {
-    wrap.replaceChildren(...options.map(o => h('button', {
-      class: 'chip' + (o.value === v ? ' on' : ''), role: 'radio', 'aria-checked': String(o.value === v),
-      onclick: () => { onPick(o.value); draw(o.value); },
-    }, o.label)));
-  };
-  draw(value);
-  return wrap;
-}
-
 function renderCustom(el) {
   const cfg = { n: 7, d: 'medium', ...load(CUSTOM_KEY, {}) };
   el.append(
@@ -69,22 +57,6 @@ function renderCustom(el) {
         save(CUSTOM_KEY, cfg);
         location.hash = `${HOME}/play?mode=custom&n=${cfg.n}&d=${cfg.d}`;
       } }, 'Start')));
-}
-
-function statTile(label, value) {
-  return h('div', { class: 'stat' }, h('span', { class: 'stat-val' }, value), h('span', { class: 'stat-lbl' }, label));
-}
-
-function breakdown(title, groups) {
-  const rows = groups.filter(g => g.sum.count);
-  if (!rows.length) return null;
-  return h('section', { class: 'card' },
-    h('h2', {}, title),
-    h('table', { class: 'table' },
-      h('thead', {}, h('tr', {}, ['', 'Done', 'Avg', 'Min', 'Max'].map(t => h('th', {}, t)))),
-      h('tbody', {}, rows.map(g => h('tr', {},
-        h('td', {}, g.label), h('td', {}, g.sum.count),
-        h('td', {}, fmtTime(g.sum.avg)), h('td', {}, fmtTime(g.sum.min)), h('td', {}, fmtTime(g.sum.max)))))));
 }
 
 function renderStats(el) {

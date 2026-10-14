@@ -4,9 +4,23 @@
   --muted: #8a8a8a;
   --line: #2a2a2a;
   --line-strong: #fff;
+  --soft: #cfcfcf;
+  --tile: #161616;
   --radius: 12px;
   --gutter: 16px;
   color-scheme: dark;
+}
+
+/* Day theme: black and white swapped. Game colours stay the same. */
+:root[data-theme="day"] {
+  --bg: #fff;
+  --fg: #000;
+  --muted: #6e6e6e;
+  --line: #e3e3e3;
+  --line-strong: #000;
+  --soft: #333;
+  --tile: #ededed;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -124,7 +138,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .btn.continue:active { background: transparent; color: var(--fg); }
 .continue-sub { font-size: 13px; opacity: .65; font-variant-numeric: tabular-nums; }
 .how summary { cursor: pointer; font-weight: 600; min-height: 28px; }
-.how p { color: #cfcfcf; margin-top: 10px; }
+.how p { color: var(--soft); margin-top: 10px; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
@@ -169,7 +183,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   grid-template-columns: repeat(var(--n), 1fr);
   grid-template-rows: repeat(var(--n), 1fr);
   padding: 2px;
-  background: #000;
+  background: var(--bg);
   border: 2px solid var(--fg);
   border-radius: 16px;
   touch-action: none;
@@ -214,6 +228,60 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .win-time { font-size: 44px; font-weight: 600; font-variant-numeric: tabular-nums; margin: 4px 0 8px; }
 .row-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
 @keyframes rise { from { transform: translateY(8px); opacity: 0; } }
+
+/* Block game */
+.bj-frame {
+  --r-block: calc(var(--cell) * .24);
+  position: relative;
+  padding: 14px;
+  border: 2px solid var(--fg);
+  border-radius: 20px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.bj-floor { position: relative; }
+.bj-tile { position: absolute; width: var(--cell); height: var(--cell); padding: 2px; }
+.bj-tile::before { content: ""; display: block; width: 100%; height: 100%; border-radius: 24%; background: var(--tile); }
+.bj-door { position: absolute; border-radius: 4px; }
+.bj-blocks { position: absolute; inset: 0; }
+.bj-block {
+  position: absolute; left: 0; top: 0; width: 0; height: 0;
+  transition: transform .07s linear;
+  cursor: grab;
+  z-index: 1;
+}
+.bj-block.lift { z-index: 2; cursor: grabbing; }
+.bj-block.lift .bj-cell { filter: brightness(1.08); }
+.bj-block.leaving { transition: transform .25s ease-in, opacity .25s ease-in; opacity: 0; pointer-events: none; }
+.bj-cell {
+  position: absolute;
+  background: var(--c);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(0, 0, 0, .6);
+}
+.bj-stud {
+  width: 44%; height: 44%; border-radius: 50%;
+  background: rgba(0, 0, 0, .12);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .25);
+  display: flex; align-items: center; justify-content: center;
+}
+.bj-stud svg { width: 88%; height: 88%; }
+.bj-block.layered .bj-stud { width: 58%; height: 58%; background: var(--ci); box-shadow: 0 0 0 2px rgba(0, 0, 0, .3); }
+.bj-block.iced .bj-cell { background: linear-gradient(rgba(225, 240, 255, .72), rgba(225, 240, 255, .72)), var(--c); }
+.bj-block.iced .bj-stud { opacity: .25; }
+.bj-ice {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: calc(var(--cell) * .45); color: #0b2a44;
+  pointer-events: none;
+}
+.bj-block.peel .bj-cell { animation: peel .3s ease-out; }
+.bj-block.shake .bj-cell { animation: shake .3s; }
+.bj-frame.done .bj-block { pointer-events: none; }
+@keyframes peel { 40% { transform: scale(1.12); } }
+@keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.timer.low { animation: pulse .5s ease-in-out infinite alternate; }
 
 /* Toast */
 #toast {

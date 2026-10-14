@@ -4,10 +4,17 @@
 export const games = [
   {
     id: 'pans',
-    title: 'Carter, stop hiding my sh@&!',
+    title: 'Carter, Stop Hiding My Shit!',
     blurb: 'Find every frying pan',
     statsKey: 'games.pans.stats',
     load: () => import('../games/pans/index.js'),
+  },
+  {
+    id: 'blocks',
+    title: 'Kelsey Blocked Me In Again!',
+    blurb: 'Slide every block out its door',
+    statsKey: 'games.blocks.stats',
+    load: () => import('../games/blocks/index.js'),
   },
 ];
 
