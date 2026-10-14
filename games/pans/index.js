@@ -5,7 +5,7 @@ import { DIFFICULTIES } from './generator.js';
 import { getStats, summarize } from './stats.js';
 import { mountBoard, getSavedGame } from './board.js';
 
-export const TITLE = 'Carter, Stop Hiding My Shit!';
+export const TITLE = 'Carter, Stop Hiding My Stuff!';
 const HOME = '#/game/pans';
 const SIZES = [5, 6, 7, 8, 9, 10];
 const CUSTOM_KEY = 'games.pans.custom';

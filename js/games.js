@@ -4,7 +4,7 @@
 export const games = [
   {
     id: 'pans',
-    title: 'Carter, Stop Hiding My Shit!',
+    title: 'Carter, Stop Hiding My Stuff!',
     blurb: 'Find every frying pan',
     statsKey: 'games.pans.stats',
     load: () => import('../games/pans/index.js'),

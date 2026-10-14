@@ -4,7 +4,7 @@ A minimal black-and-white puzzle app, built as a PWA so it installs to a phone's
 
 ## Games
 
-**Carter, Stop Hiding My Shit!**: a remake of Meowdoku where you hunt frying pans instead of cats.
+**Carter, Stop Hiding My Stuff!**: a remake of Meowdoku where you hunt frying pans instead of cats.
 Place one pan in every row, every column and every colour region. Pans never touch, not even diagonally.
 Tap a square once for ✕, twice for a pan. Drag to mark ✕ on many squares.
 
