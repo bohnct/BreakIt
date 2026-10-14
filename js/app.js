@@ -42,10 +42,10 @@ async function route() {
 }
 
 playtimer.onExpire(() => {
-  current?.unmount?.();
+  current?.unmount?.('expired');
   current = null;
   location.hash = '#/';
-  toast("Time's up. Game over for now.", 4000);
+  toast("Time's up. Your game is saved.", 4000);
 });
 
 window.addEventListener('hashchange', route);

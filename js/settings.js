@@ -43,7 +43,7 @@ export function renderSettings(el) {
     header('Settings', '#/'),
     h('section', { class: 'card' },
       h('h2', {}, 'Play time limit'),
-      h('p', { class: 'muted' }, 'When time runs out you are sent back to the main menu.'),
+      h('p', { class: 'muted' }, 'When time runs out you are sent back to the main menu. Your game is saved so you can continue it later.'),
       h('div', { class: 'row' }, h('span', {}, 'Enabled'), toggle),
       minutesRow,
       h('div', { class: 'row' }, h('span', {}, 'Played so far'), used),

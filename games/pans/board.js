@@ -1,9 +1,14 @@
-import { h, header, toast, fmtTime } from '../../js/ui.js';
+import { h, header, fmtTime } from '../../js/ui.js';
+import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
 import { generate, DIFFICULTIES } from './generator.js';
 import { recordStart, recordWin } from './stats.js';
 
 const HOME = '#/game/pans';
+const SAVE_KEY = 'games.pans.saved';
+
+// A game cut short by the play-time limit, kept so it can be continued.
+export const getSavedGame = () => load(SAVE_KEY, null);
 const EMPTY = 0, CROSS = 1, PAN = 2;
 // coolors.co/palette/f94144-f3722c-f8961e-f9c74f-90be6d-43aa8b-577590,
 // topped up from the same palette's 10-colour version for grids above 7×7.
@@ -68,9 +73,12 @@ function generateAsync(n, difficulty) {
 }
 
 export function mountBoard(el, query) {
-  const mode = query.get('mode') === 'custom' ? 'custom' : 'random';
+  const saved = query.get('resume') ? getSavedGame() : null;
+  let mode = query.get('mode') === 'custom' ? 'custom' : 'random';
   let n, difficulty;
-  if (mode === 'custom') {
+  if (saved) {
+    ({ mode, n, difficulty } = saved);
+  } else if (mode === 'custom') {
     n = Math.min(10, Math.max(5, parseInt(query.get('n'), 10) || 7));
     difficulty = DIFFICULTIES.includes(query.get('d')) ? query.get('d') : 'medium';
   } else {
@@ -79,6 +87,7 @@ export function mountBoard(el, query) {
   }
 
   let alive = true;
+  let saveProgress = null;
   const cleanups = [];
   const timerEl = h('span', { class: 'timer' }, '0:00');
   const bar = header(`${n}×${n} · ${cap(difficulty)}`, HOME);
@@ -92,25 +101,34 @@ export function mountBoard(el, query) {
   };
   showLimit(playtimer.remainingMs());
 
-  generateAsync(n, difficulty).then(puzzle => {
-    if (!alive) return;
-    recordStart();
-    startGame(puzzle);
-  });
+  if (saved) {
+    remove(SAVE_KEY);
+    startGame(saved.puzzle, saved);
+  } else {
+    generateAsync(n, difficulty).then(puzzle => {
+      if (!alive) return;
+      recordStart();
+      startGame(puzzle);
+    });
+  }
 
-  function startGame(puzzle) {
-    const { regions, solution } = puzzle;
+  function startGame(puzzle, resume) {
+    const { regions } = puzzle;
     const N = n * n;
-    const colours = assignColours(n, regions);
-    const isSolution = i => solution[Math.floor(i / n)] === i % n;
-    const state = new Uint8Array(N);
+    const colours = resume?.colours ?? assignColours(n, regions);
+    const state = resume ? Uint8Array.from(resume.state) : new Uint8Array(N);
     const history = [];
-    let seconds = 0, hints = 0, won = false;
+    let seconds = resume?.seconds ?? 0, won = false;
+
+    saveProgress = () => {
+      if (won) return;
+      save(SAVE_KEY, { mode, n, difficulty, puzzle, colours, state: [...state], seconds });
+    };
 
     playtimer.start();
     cleanups.push(playtimer.onTick(showLimit));
 
-    let last = Date.now(), acc = 0;
+    let last = Date.now(), acc = seconds * 1000;
     const clock = setInterval(() => {
       const now = Date.now();
       if (!document.hidden && !won) acc += now - last;
@@ -122,14 +140,22 @@ export function mountBoard(el, query) {
     document.addEventListener('visibilitychange', onVis);
     cleanups.push(() => { clearInterval(clock); document.removeEventListener('visibilitychange', onVis); });
 
+    // Every square is a rounded tile. Tiles in a region sit close with soft corners, so the
+    // region reads as one rounded block; regions are split by a wider gap.
     const grid = h('div', { class: 'grid', style: `--n:${n}`, role: 'grid', 'aria-label': 'Puzzle grid' });
     const cells = [];
     for (let i = 0; i < N; i++) {
       const r = Math.floor(i / n), c = i % n;
-      const style = [`background:${colours[regions[i]]}`];
-      if (r > 0) style.push(regions[i - n] !== regions[i] ? 'border-top:3px solid #000' : 'border-top:1px solid rgba(0,0,0,.28)');
-      if (c > 0) style.push(regions[i - 1] !== regions[i] ? 'border-left:3px solid #000' : 'border-left:1px solid rgba(0,0,0,.28)');
-      const cell = h('div', { class: 'cell', 'data-i': i, role: 'gridcell', style: style.join(';') });
+      // Region edge on each side: top, right, bottom, left.
+      const edge = [r > 0 ? i - n : null, c < n - 1 ? i + 1 : null, r < n - 1 ? i + n : null, c > 0 ? i - 1 : null]
+        .map(j => j == null || regions[j] !== regions[i]);
+      const margin = edge.map(e => (e ? 'var(--gap-out)' : 'var(--gap-in)')).join(' ');
+      const corner = (a, b) => (edge[a] && edge[b] ? 'var(--r-out)' : 'var(--r-in)');
+      const radius = [corner(0, 3), corner(0, 1), corner(2, 1), corner(2, 3)].join(' ');
+      const cell = h('div', {
+        class: 'cell', 'data-i': i, role: 'gridcell',
+        style: `background:${colours[regions[i]]};margin:${margin};border-radius:${radius}`,
+      });
       cells.push(cell);
       grid.append(cell);
     }
@@ -230,34 +256,10 @@ export function mountBoard(el, query) {
       for (let i = 0; i < N; i++) set(i, EMPTY, batch);
       apply(batch);
     };
-    const flash = i => {
-      cells[i].classList.remove('flash');
-      void cells[i].offsetWidth;
-      cells[i].classList.add('flash');
-    };
-    const hint = () => {
-      if (won) return;
-      for (let i = 0; i < N; i++) {
-        if ((state[i] === PAN && !isSolution(i)) || (state[i] === CROSS && isSolution(i))) {
-          flash(i);
-          toast(state[i] === PAN ? 'No pan there' : 'Look under that ✕');
-          return;
-        }
-      }
-      const rows = shuffled([...Array(n).keys()]).filter(r => state[r * n + solution[r]] !== PAN);
-      if (!rows.length) return;
-      const i = rows[0] * n + solution[rows[0]];
-      hints++;
-      const batch = [];
-      set(i, PAN, batch);
-      apply(batch);
-      flash(i);
-    };
-
     function win() {
       won = true;
       playtimer.stop();
-      recordWin({ n, d: difficulty, s: seconds, m: mode, hints });
+      recordWin({ n, d: difficulty, s: seconds, m: mode });
       grid.classList.add('won');
       stage.querySelector('.controls')?.remove();
       const nextHref = mode === 'custom'
@@ -266,7 +268,6 @@ export function mountBoard(el, query) {
       stage.append(h('div', { class: 'win card' },
         h('h2', {}, 'Found them all'),
         h('p', { class: 'win-time' }, fmtTime(seconds)),
-        hints ? h('p', { class: 'muted' }, `${hints} hint${hints > 1 ? 's' : ''} used`) : null,
         h('div', { class: 'row-btns' },
           h('a', { class: 'btn big', href: nextHref }, 'Next level'),
           h('a', { class: 'btn big ghost', href: HOME }, 'Menu'))));
@@ -276,13 +277,13 @@ export function mountBoard(el, query) {
       grid,
       h('div', { class: 'controls' },
         h('button', { class: 'btn', onclick: undo }, 'Undo'),
-        h('button', { class: 'btn', onclick: clear }, 'Clear'),
-        h('button', { class: 'btn', onclick: hint }, 'Hint')));
+        h('button', { class: 'btn', onclick: clear }, 'Clear')));
     draw();
   }
 
   return {
-    unmount() {
+    unmount(reason) {
+      if (reason === 'expired') saveProgress?.();
       alive = false;
       cleanups.forEach(fn => fn());
     },

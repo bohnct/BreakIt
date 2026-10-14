@@ -2,7 +2,7 @@ import { h, header, fmtTime } from '../../js/ui.js';
 import { load, save } from '../../js/storage.js';
 import { DIFFICULTIES } from './generator.js';
 import { getStats, summarize } from './stats.js';
-import { mountBoard } from './board.js';
+import { mountBoard, getSavedGame } from './board.js';
 
 export const TITLE = 'Carter, stop hiding my sh@&!';
 const HOME = '#/game/pans';
@@ -20,6 +20,7 @@ export function mount(el, parts, query) {
 }
 
 function renderLanding(el) {
+  const saved = getSavedGame();
   el.append(
     header(TITLE, '#/'),
     h('div', { class: 'hero' },
@@ -27,6 +28,9 @@ function renderLanding(el) {
         ['#f94144', '#f3722c', '#f8961e', '#f9c74f', '#90be6d', '#43aa8b', '#577590']
           .map(c => h('span', { style: `background:${c}` })))),
     h('nav', { class: 'list' },
+      saved && h('a', { class: 'btn big continue', href: `${HOME}/play?resume=1&k=${Date.now()}` },
+        h('span', {}, 'Continue'),
+        h('span', { class: 'continue-sub' }, `${saved.n}×${saved.n} · ${cap(saved.difficulty)} · ${fmtTime(saved.seconds)}`)),
       h('a', { class: 'btn big', href: `${HOME}/play?mode=random` }, 'Random level'),
       h('a', { class: 'btn big', href: `${HOME}/custom` }, 'Custom level'),
       h('a', { class: 'btn big ghost', href: `${HOME}/stats` }, 'Stats')),

@@ -120,6 +120,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hero { display: flex; justify-content: center; padding: 8px 0 4px; }
 .swatches { display: flex; gap: 6px; }
 .swatches span { width: 22px; height: 22px; border-radius: 5px; }
+.btn.continue { background: var(--fg); color: var(--bg); flex-direction: column; gap: 0; min-height: 64px; }
+.btn.continue:active { background: transparent; color: var(--fg); }
+.continue-sub { font-size: 13px; opacity: .65; font-variant-numeric: tabular-nums; }
 .how summary { cursor: pointer; font-weight: 600; min-height: 28px; }
 .how p { color: #cfcfcf; margin-top: 10px; }
 
@@ -165,9 +168,10 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   display: grid;
   grid-template-columns: repeat(var(--n), 1fr);
   grid-template-rows: repeat(var(--n), 1fr);
+  padding: 2px;
+  background: #000;
   border: 2px solid var(--fg);
-  border-radius: 6px;
-  overflow: hidden;
+  border-radius: 16px;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -179,23 +183,22 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   position: relative;
   min-width: 0; min-height: 0;
 }
+.grid {
+  --gap-in: 1px;
+  --gap-out: 3px;
+  --r-out: calc(var(--size) / var(--n) * .28);
+  --r-in: calc(var(--size) / var(--n) * .12);
+}
 .cell svg { width: 72%; height: 72%; pointer-events: none; }
 .cell[data-s="1"] svg { width: 52%; height: 52%; opacity: .7; }
 .cell.bad::after {
-  content: ""; position: absolute; inset: 2px;
-  border: 3px solid var(--fg); border-radius: 4px;
+  content: ""; position: absolute; inset: 0;
+  border: 3px solid var(--fg); border-radius: inherit;
   box-shadow: 0 0 0 2px #000 inset;
   animation: pulse 1s ease-in-out infinite alternate;
   pointer-events: none;
 }
-.cell.flash::before {
-  content: ""; position: absolute; inset: 0;
-  background: var(--fg);
-  animation: flash .9s ease-out forwards;
-  pointer-events: none;
-}
 @keyframes pulse { from { opacity: 1; } to { opacity: .35; } }
-@keyframes flash { from { opacity: .9; } to { opacity: 0; } }
 .grid.won { pointer-events: none; }
 .grid.won .cell[data-s="1"] svg { opacity: 0; transition: opacity .4s; }
 
