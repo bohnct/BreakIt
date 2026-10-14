@@ -46,6 +46,7 @@ export function dealHand(g) {
   g.taken = [0, 0]; // card points won this hand
   g.out = []; // every card played this hand (hard players remember them)
   g.tricksWon = [0, 0];
+  g.won = Array(g.players).fill(0); // cards each player has taken this hand, kept face down by them
   g.trick = null; // { leader, rank, plays: [{ p, c, round }], round, winner }
   g.lastTrick = null; // the trick just finished, for showing who took it
   g.turn = (g.dealer + 1) % g.players;
@@ -81,8 +82,10 @@ export function play(g, p, c) {
   if (rank(c) === t.rank || isWild(c)) t.winner = p;
   g.turn = next(g, p);
   if (g.turn === t.leader) {
-    // Round over: the leader chooses, unless fighting isn't possible.
-    if (canFight(g)) g.phase = 'decide';
+    // Round over: the leader chooses whether to fight, but only when the other side is winning
+    // and the leader can actually fight. Otherwise the trick simply ends.
+    const losing = team(g, t.winner) !== team(g, t.leader);
+    if (losing && canFight(g)) g.phase = 'decide';
     else endTrick(g);
   }
   return true;
@@ -100,6 +103,8 @@ export function endTrick(g) {
   const t = g.trick, side = team(g, t.winner);
   g.taken[side] += t.plays.reduce((a, x) => a + points(x.c), 0);
   g.tricksWon[side]++;
+  g.won ??= Array(g.players).fill(0);
+  g.won[t.winner] += t.plays.length;
   g.lastTrick = t;
   g.trick = null;
   // Everyone draws back up to four, one card at a time starting with the leader, so a short

@@ -51,8 +51,8 @@ function garlic() {
     <circle cx="92" cy="28" r="1.2" fill="currentColor"/><circle cx="104" cy="22" r="1.2" fill="currentColor"/><circle cx="55" cy="22" r="1.2" fill="currentColor"/>`;
 }
 
-// Card colours match the card games: spades blue, hearts red, diamonds orange, clubs teal.
-const SUIT_FILL = { '♠': P.blue, '♥': P.red, '♦': P.amber, '♣': P.teal };
+// Card colours match the card games: red suits red, black suits blue.
+const SUIT_FILL = { '♠': P.blue, '♥': P.red, '♦': P.red, '♣': P.blue };
 const card = (x, y, rot, [r, s]) =>
   `<g transform="translate(${x} ${y}) rotate(${rot})"><rect x="-13" y="-18" width="26" height="36" rx="3.5" fill="${SUIT_FILL[s]}"/><text x="-9.5" y="-8" font-size="8" font-weight="700" fill="#000">${r}</text><text x="0" y="8" font-size="13" text-anchor="middle" fill="#000">${s}︎</text></g>`;
 const back = (x, y, rot) =>

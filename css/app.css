@@ -318,18 +318,17 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   width: var(--cw); height: var(--ch);
   border-radius: calc(var(--cw) * .12);
 }
-/* Cards use the game palette: warm suits (hearts red, diamonds orange) against cool suits
-   (spades blue, clubs teal), with black text like the tiles in the other games. */
+/* Cards use two palette colours, matching red and black suits: hearts and diamonds red,
+   spades and clubs blue (black wouldn't show on the Night background). Black text, like the
+   tiles in the other games. */
 .sol-card {
   color: #000;
   transition: transform .16s ease-out;
   cursor: pointer;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
-.sol-card.s0 { background: #577590; }
-.sol-card.s1 { background: #f94144; }
-.sol-card.s2 { background: #f8961e; }
-.sol-card.s3 { background: #43aa8b; }
+.sol-card.s0, .sol-card.s3 { background: #577590; }
+.sol-card.s1, .sol-card.s2 { background: #f94144; }
 .sol-card.dragging { transition: none; }
 .sol-corner { position: absolute; left: 7%; top: 3%; font-size: calc(var(--cw) * .3); font-weight: 700; line-height: .95; text-align: center; }
 .sol-pip { position: absolute; right: 8%; bottom: 4%; font-size: calc(var(--cw) * .5); line-height: 1; }
@@ -353,26 +352,38 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hola .sol-card { position: relative; flex-shrink: 0; transition: none; }
 .hola-score { display: flex; justify-content: space-between; align-items: baseline; font-variant-numeric: tabular-nums; font-size: 15px; }
 .hola-side.us { font-weight: 700; }
-.hola-seats { display: flex; justify-content: space-between; gap: 8px; }
-.hola-seats.n2 { justify-content: center; }
-.hola-seats.n4 .seat2 { order: 2; }
-.hola-seats.n4 .seat3 { order: 3; }
+/* The table: seats around the edge, played cards in the middle in front of each player. */
+.hola-field { position: relative; height: var(--fh); border: 1px solid var(--line); border-radius: 20px; }
 .hola-seat {
+  position: absolute; z-index: 2;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius); min-width: 92px;
+  padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--bg);
 }
+.hola-seat.pos-top { left: 50%; top: 8px; transform: translateX(-50%); }
+.hola-seat.pos-left { left: 6px; top: 50%; transform: translateY(-50%); }
+.hola-seat.pos-right { right: 6px; top: 50%; transform: translateY(-50%); }
 .hola-seat.turn { border-color: var(--fg); }
-.hola-seat.winning .hola-name::after { content: " ★"; }
-.hola-name { font-size: 14px; white-space: nowrap; }
-.hola-backs { display: flex; gap: 3px; min-height: 16px; }
-.hola-backs i { width: 11px; height: 16px; border-radius: 3px; background: var(--tile); box-shadow: inset 0 0 0 1px var(--muted); }
-.hola-table { display: flex; gap: 12px; align-items: flex-start; min-height: calc(var(--ch) + 24px); }
-.hola-stock { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; }
-.hola-stock .sol-slot { position: relative; }
-.hola-trick { display: flex; flex-wrap: wrap; gap: 4px 0; flex: 1; }
-.hola-play { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-right: calc(var(--cw) * -.45); }
-.hola-play:last-child { margin-right: 0; }
-.hola-who { font-size: 11px; color: var(--muted); }
+.hola-seat.winning .hola-name::after, .hola-mypile.winning .hola-pile span::after { content: " ★"; }
+.hola-name { font-size: 13px; white-space: nowrap; }
+.hola-seat-row { display: flex; align-items: center; gap: 8px; }
+.hola-seat.pos-left .hola-seat-row, .hola-seat.pos-right .hola-seat-row { flex-direction: column; gap: 4px; }
+.hola-backs { display: flex; gap: 2px; min-height: 15px; }
+.hola-backs i { width: 10px; height: 15px; border-radius: 3px; background: var(--tile); box-shadow: inset 0 0 0 1px var(--muted); }
+.hola-center { position: absolute; inset: 0; --cw: var(--tw); --ch: var(--th); }
+.hola-center .sol-card { position: absolute; transform: translate(-50%, -50%); }
+.hola-stock { position: absolute; left: 10px; bottom: 8px; }
+/* Face-down pile of won cards, with a count. */
+.hola-pile { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+.hola-pile-stack { position: relative; width: 20px; height: 28px; }
+.hola-pile-stack i {
+  position: absolute; left: calc(var(--k) * 1.5px); top: calc(var(--k) * -1.5px);
+  width: 20px; height: 28px; border-radius: 4px;
+  background: var(--tile); box-shadow: inset 0 0 0 1px var(--muted);
+}
+.hola-pile.empty .hola-pile-stack { border: 1px dashed var(--line); border-radius: 4px; }
+.hola-me { display: flex; align-items: center; gap: 10px; justify-content: center; }
+.hola-mypile .hola-pile-stack, .hola-mypile .hola-pile-stack i { width: 26px; height: 37px; }
 .hola .sol-card.dim { filter: saturate(.25) brightness(.7); }
 .hola .sol-card.win-card { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
 .hola-msg { min-height: 22px; text-align: center; font-size: 15px; }

@@ -60,19 +60,29 @@ export function mountBoard(el, query) {
   cleanups.push(playtimer.onTick(showLimit));
 
   const scoreEl = h('div', { class: 'hola-score' });
-  const seatsEl = h('div', { class: `hola-seats n${g.players}` });
-  const tableEl = h('div', { class: 'hola-table' });
+  const fieldEl = h('div', { class: 'hola-field' });
   const msgEl = h('div', { class: 'hola-msg' });
   const actionsEl = h('div', { class: 'hola-actions' });
   const handEl = h('div', { class: 'hola-hand' });
-  const wrap = h('div', { class: 'hola' }, scoreEl, seatsEl, tableEl, msgEl, actionsEl, handEl);
+  const myPileEl = h('div', { class: 'hola-mypile' });
+  const wrap = h('div', { class: 'hola' }, scoreEl, fieldEl, msgEl, actionsEl, h('div', { class: 'hola-me' }, myPileEl, handEl));
   const stage = h('div', { class: 'stage' }, wrap);
   el.append(bar, limitEl, stage);
 
+  // Seats around the table: you at the bottom, your partner (or Gedo in 1 v 1) opposite.
+  const POS = g.players === 2 ? ['bottom', 'top'] : ['bottom', 'left', 'top', 'right'];
+  let tw = 44, th = 62;
   const size = () => {
     const W = Math.min(window.innerWidth - 32, 528);
-    wrap.style.setProperty('--cw', `${Math.min(76, Math.floor((W - 30) / 4.4))}px`);
-    wrap.style.setProperty('--ch', `${Math.round(Math.min(76, Math.floor((W - 30) / 4.4)) * 1.42)}px`);
+    const cw = Math.min(76, Math.floor((W - 90) / 4.4));
+    tw = Math.min(58, Math.round(W * 0.13));
+    th = Math.round(tw * 1.42);
+    wrap.style.setProperty('--cw', `${cw}px`);
+    wrap.style.setProperty('--ch', `${Math.round(cw * 1.42)}px`);
+    wrap.style.setProperty('--tw', `${tw}px`);
+    wrap.style.setProperty('--th', `${th}px`);
+    wrap.style.setProperty('--fh', `${Math.round(th * 4.6)}px`);
+    if (g.hands) render();
   };
   size();
   window.addEventListener('resize', size);
@@ -86,18 +96,35 @@ export function mountBoard(el, query) {
       h('span', { class: 'hola-side' }, `${g.scores[1]} ${g.players === 2 ? 'Gedo' : 'Kelsey and Carter'}`));
 
     const t = g.trick || g.lastTrick;
-    const seat = p => h('div', { class: `hola-seat seat${p}` + (g.turn === p && !g.lastTrick && g.phase === 'play' ? ' turn' : '') + (t && t.winner === p ? ' winning' : '') },
+    const won = g.won ?? Array(g.players).fill(0);
+    // Face-down pile of the cards a player has won this hand, with the count.
+    const pile = (n, label) => h('div', { class: 'hola-pile' + (n ? '' : ' empty') },
+      h('div', { class: 'hola-pile-stack' }, [...Array(Math.min(4, Math.ceil(n / 4)))].map((_, k) => h('i', { style: `--k:${k}` }))),
+      h('span', { class: 'muted' }, label ?? String(n)));
+    const seat = p => h('div', { class: `hola-seat pos-${POS[p]}` + (g.turn === p && !g.lastTrick && g.phase === 'play' ? ' turn' : '') + (t && t.winner === p ? ' winning' : '') },
       h('span', { class: 'hola-name' }, names[p], team(g, p) === 0 ? h('span', { class: 'muted' }, ' · partner') : null),
-      h('span', { class: 'hola-backs' }, g.hands[p].map(() => h('i'))));
-    seatsEl.replaceChildren(...[...Array(g.players).keys()].filter(p => p !== 0).map(seat));
+      h('div', { class: 'hola-seat-row' },
+        h('span', { class: 'hola-backs' }, g.hands[p].map(() => h('i'))),
+        pile(won[p])));
 
-    const stock = h('div', { class: 'hola-stock' },
-      g.stock.length ? h('div', { class: 'sol-card back' }) : h('div', { class: 'sol-slot' }),
-      h('span', { class: 'muted' }, `${g.stock.length} left`));
-    const plays = t ? t.plays.map(x => h('div', { class: 'hola-play' },
-      cardEl(x.c, (x.p === t.winner && x === [...t.plays].reverse().find(y => y.p === t.winner) ? 'win-card' : '') + (rank(x.c) === t.rank || isWild(x.c) ? '' : ' dim')),
-      h('span', { class: 'hola-who' }, names[x.p]))) : [];
-    tableEl.replaceChildren(stock, h('div', { class: 'hola-trick' }, ...plays));
+    // Played cards sit in the middle of the table, in front of whoever played them. Cards from
+    // later rounds of a fight land slightly offset on top of the earlier ones.
+    const OFF = { bottom: [0, 0.58 * th], top: [0, -0.58 * th], left: [-0.95 * tw, 0], right: [0.95 * tw, 0] };
+    const lastWinPlay = t ? [...t.plays].reverse().find(y => y.p === t.winner) : null;
+    const plays = t ? t.plays.map(x => {
+      const [dx, dy] = OFF[POS[x.p]];
+      const e = cardEl(x.c, (x === lastWinPlay ? 'win-card' : '') + (rank(x.c) === t.rank || isWild(x.c) ? '' : ' dim'));
+      e.style.left = `calc(50% + ${dx + x.round * 7}px)`;
+      e.style.top = `calc(50% + ${dy + x.round * 4}px)`;
+      return e;
+    }) : [];
+    const stock = h('div', { class: 'hola-stock' }, pile(g.stock.length * 4, `${g.stock.length} left`));
+    fieldEl.replaceChildren(
+      ...[...Array(g.players).keys()].filter(p => p !== 0).map(seat),
+      h('div', { class: 'hola-center' }, ...plays),
+      stock);
+    myPileEl.replaceChildren(pile(won[0], `Won ${won[0]}`));
+    myPileEl.classList.toggle('winning', !!(t && t.winner === 0));
 
     let msg = '';
     if (g.lastTrick && g.phase === 'play') {
@@ -105,7 +132,7 @@ export function mountBoard(el, query) {
       msg = `${names[lt.winner]} ${lt.winner === 0 ? 'take' : 'takes'} the trick${pts ? ` (+${pts})` : ''}`;
     } else if (g.phase === 'decide') {
       msg = g.trick.leader === 0
-        ? (team(g, g.trick.winner) === 0 ? 'You\'re winning this trick. Take it, or fight on?' : `${names[g.trick.winner]} is winning. Fight with ${aRank(g.trick.rank)} or a 7, or let it go?`)
+        ? `${names[g.trick.winner]} is winning. Fight with ${aRank(g.trick.rank)} or a 7, or let it go?`
         : `${names[g.trick.leader]} is deciding…`;
     } else if (g.phase === 'play') {
       if (g.turn === 0) {
@@ -119,7 +146,7 @@ export function mountBoard(el, query) {
     actionsEl.replaceChildren();
     if (g.phase === 'decide' && g.trick.leader === 0) {
       actionsEl.append(
-        h('button', { class: 'btn', onclick: () => { endTrick(g); render(); schedule(); } }, 'Take the trick'),
+        h('button', { class: 'btn', onclick: () => { endTrick(g); render(); schedule(); } }, 'Let it go'),
         h('button', { class: 'btn', disabled: !canFight(g), onclick: () => { fight(g); render(); schedule(); } }, 'Fight'));
     }
 

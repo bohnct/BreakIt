@@ -53,13 +53,13 @@ Blocks march in from every side toward the nearest garlic, and each one that rea
 - **Custom level:** pick the difficulty, number of waves, and whether brutes, splitters and the boss appear.
 
 **Babas Game**: Klondike solitaire.
-Tap the deck to turn cards over. Tap a card to send it to the best place, or drag it. Undo is included, and the game finishes itself once every card is face up. Cards use the game palette: hearts red and diamonds orange (warm) against spades blue and clubs teal (cool).
+Tap the deck to turn cards over. Tap a card to send it to the best place, or drag it. Undo is included, and the game finishes itself once every card is face up. Cards use two palette colours to match red and black suits: hearts and diamonds are red, spades and clubs blue.
 
 - **Random deal:** draw 1 or 3 with unlimited passes, always winnable. A solver checks each deal first.
 - **Custom deal:** pick draw 1 or 3, unlimited, 3 or 1 passes through the deck, and always-winnable or any deal.
 
 **Gedos Game**: Hola, with only sevens wild.
-Play 1 v 1 against Gedo, or 2 v 2 with Gedo as your partner against Kelsey and Carter. Only a card of the led rank, or a seven, takes a trick over. After each round the leader takes the trick or fights on. Aces and tens score 10, the last trick of each hand scores 10, and taking every trick (a Hola) scores 170.
+Play 1 v 1 against Gedo, or 2 v 2 with Gedo as your partner against Kelsey and Carter. Players sit around the table, each played card lands in the middle in front of whoever played it, and the cards each player wins pile up face down beside them. Only a card of the led rank, or a seven, takes a trick over. After each round the leader takes the trick or fights on. Aces and tens score 10, the last trick of each hand scores 10, and taking every trick (a Hola) scores 170.
 
 - **Custom game:** pick 1 v 1 or 2 v 2, a target of 150, 300 or 500, and a difficulty.
 - **Difficulty:** Easy players are careless, Medium players fight for points and feed their partner, and Hard players also remember every card played.
