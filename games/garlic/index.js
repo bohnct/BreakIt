@@ -1,4 +1,5 @@
 import { h, header, fmtTime, chips, toggleChips, statTile, breakdown } from '../../js/ui.js';
+import { preview } from '../../js/previews.js';
 import { load, save } from '../../js/storage.js';
 import { summarize } from '../../js/stats.js';
 import { DIFFICULTIES } from './engine.js';
@@ -22,9 +23,7 @@ function renderLanding(el) {
   const saved = getSavedGame();
   el.append(
     header(TITLE, '#/'),
-    h('div', { class: 'hero' },
-      h('div', { class: 'swatches' },
-        ['#f9c74f', '#f8961e', '#f94144', '#43aa8b', '#577590'].map(c => h('span', { style: `background:${c}` })))),
+    preview('garlic'),
     h('nav', { class: 'list' },
       saved && h('a', { class: 'btn big continue', href: `${HOME}/play?resume=1&k=${Date.now()}` },
         h('span', {}, 'Continue'),
@@ -34,14 +33,15 @@ function renderLanding(el) {
       h('a', { class: 'btn big ghost', href: `${HOME}/stats` }, 'Stats')),
     h('details', { class: 'card how' },
       h('summary', {}, 'How to play'),
-      h('p', {}, 'Blocks march in from every side to squash your garlic. Each one that reaches it costs hearts; bigger blocks cost more. Lose every heart and the level is over.'),
-      h('p', {}, 'Your weapons fire by themselves at blocks in range. Tap a block to make every weapon focus on it.'),
-      h('p', {}, 'Destroyed blocks drop coins. Between waves, spend them on a shotgun, sniper or machine gun, on damage and rate-of-fire upgrades, or on healing the garlic. Everything resets each level, and you always start with just a handgun.'),
-      h('p', {}, 'Yellow scouts are quick, orange blocks are steady, red brutes are tough, green splitters break into scouts, and blue bosses guard the last wave.')));
+      h('p', {}, 'Blocks march in from every side to squash your garlic. Each one that reaches a garlic costs hearts; bigger blocks cost more. Lose every heart and the level is over.'),
+      h('p', {}, 'Every gun sits on its own garlic and fires by itself at blocks in range. Tap a block to make every gun focus on it.'),
+      h('p', {}, 'Destroyed blocks drop coins. Between waves, spend them on a shotgun, sniper or machine gun (each arrives on a new garlic), on damage and rate-of-fire upgrades, or on healing. Everything resets each level, and you always start with one garlic and a handgun.'),
+      h('p', {}, 'Blocks fade from bright to dim as they take damage. Yellow scouts are quick, orange blocks are steady, red brutes are tough, green splitters break into scouts, and blue bosses guard the last wave.')));
 }
 
 function renderCustom(el) {
-  const cfg = { difficulty: 'medium', waves: 10, types: ['brutes', 'splitters', 'bosses'], ...load(CUSTOM_KEY, {}) };
+  const cfg = { difficulty: 'medium', waves: 20, types: ['brutes', 'splitters', 'bosses'], ...load(CUSTOM_KEY, {}) };
+  if (!WAVE_COUNTS.includes(cfg.waves)) cfg.waves = 20;
   const types = new Set(cfg.types);
   el.append(
     header('Custom level', HOME),

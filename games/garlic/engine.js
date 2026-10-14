@@ -1,39 +1,46 @@
 // Rules, waves and weapons for "Protect My Garlic!" (a Geometry Tower remake).
 //
-// The garlic sits in the middle of the map. Waves of blocks march in from the edges; every
-// block that reaches the garlic costs it hearts. Weapons on the garlic fire by themselves at
-// blocks in range. Kills earn coins, and between waves the coins buy new weapons, damage and
-// rate-of-fire upgrades, or hearts. Nothing carries over between levels.
+// Each gun has its own garlic: the handgun garlic sits in the middle of the map and every gun
+// bought adds another garlic nearby. Waves of blocks march in from the edges toward the nearest
+// garlic; every block that reaches one costs hearts (all garlics share them). Guns fire by
+// themselves at blocks in range. Kills earn coins, and between waves the coins buy new guns,
+// damage and rate-of-fire upgrades, or hearts. Nothing carries over between levels.
 //
 // The map is W x H units (portrait); the board scales it to the screen.
 
-export const W = 100, H = 150;
-export const GX = 50, GY = 75, GARLIC_R = 7;
-export const MAX_LEVEL = 8;
+// Z sets how zoomed out the battlefield is. Distances (map size, ranges, speeds, garlic
+// spacing) scale with it, so changing it changes how small things look, not the balance.
+const Z = 2;
+export const W = 100 * Z, H = 150 * Z;
+export const CX = W / 2, CY = H / 2, GARLIC_R = 5.5;
+export const MAX_LEVEL = 12;
 
 export const WEAPONS = {
-  handgun: { name: 'Handgun', cost: 0, dmg: 4, rate: 2, range: 62, speed: 110, pellets: 1, spread: 0, pierce: 0, target: 'nearest' },
-  shotgun: { name: 'Shotgun', cost: 45, dmg: 2, rate: 0.9, range: 40, speed: 100, pellets: 5, spread: 0.5, pierce: 0, target: 'nearest' },
-  sniper: { name: 'Sniper', cost: 70, dmg: 16, rate: 0.5, range: 200, speed: 230, pellets: 1, spread: 0, pierce: 2, target: 'strongest' },
-  machinegun: { name: 'Machine gun', cost: 90, dmg: 1.1, rate: 7, range: 55, speed: 140, pellets: 1, spread: 0.14, pierce: 0, target: 'nearest' },
+  handgun: { name: 'Handgun', cost: 0, dmg: 4, rate: 2, range: 41 * Z, speed: 87 * Z, pellets: 1, spread: 0, pierce: 0, target: 'nearest' },
+  shotgun: { name: 'Shotgun', cost: 45, dmg: 2, rate: 0.9, range: 21 * Z, speed: 73 * Z, pellets: 5, spread: 0.55, pierce: 0, target: 'nearest' },
+  sniper: { name: 'Sniper', cost: 70, dmg: 16, rate: 0.5, range: 400 * Z, speed: 213 * Z, pellets: 1, spread: 0, pierce: 2, target: 'strongest' },
+  machinegun: { name: 'Machine gun', cost: 90, dmg: 1.1, rate: 7, range: 60 * Z, speed: 120 * Z, pellets: 1, spread: 0.12, pierce: 0, target: 'nearest' },
 };
 export const WEAPON_ORDER = ['handgun', 'shotgun', 'sniper', 'machinegun'];
+// Where each gun's garlic stands, relative to the middle of the map.
+const SPOTS = { handgun: [0, 0], shotgun: [-10.7, 7.3], sniper: [0, -12.7], machinegun: [10.7, 7.3] };
+export const garlicAt = id => ({ x: CX + SPOTS[id][0] * Z, y: CY + SPOTS[id][1] * Z });
 
 export const ENEMIES = {
-  scout: { size: 3, hp: 3, speed: 12, harm: 1, value: 2 },
-  block: { size: 4.5, hp: 7, speed: 8, harm: 1, value: 3 },
-  brute: { size: 7, hp: 24, speed: 5, harm: 2, value: 8 },
-  splitter: { size: 5.5, hp: 10, speed: 7, harm: 2, value: 4 },
-  boss: { size: 11, hp: 150, speed: 3.5, harm: 8, value: 40 },
+  scout: { size: 3, hp: 3, speed: 10.7 * Z, harm: 1, value: 2 },
+  block: { size: 4.5, hp: 7, speed: 7.3 * Z, harm: 1, value: 3 },
+  brute: { size: 7, hp: 24, speed: 4.7 * Z, harm: 2, value: 8 },
+  splitter: { size: 5.5, hp: 10, speed: 6.3 * Z, harm: 2, value: 4 },
+  boss: { size: 11, hp: 150, speed: 3.3 * Z, harm: 8, value: 40 },
 };
 
 export const DIFFICULTIES = ['easy', 'medium', 'hard'];
 // hp/grow: enemy health at wave 1 and how much it climbs each wave.
 // count/more: enemies in wave 1 and how many more each wave.
 export const DIFF = {
-  easy: { hp: 0.8, grow: 0.16, count: 3, more: 2, speed: 0.9, waves: 8, hearts: 12 },
-  medium: { hp: 0.9, grow: 0.24, count: 3.5, more: 2.5, speed: 1, waves: 10, hearts: 10 },
-  hard: { hp: 1, grow: 0.31, count: 4, more: 3, speed: 1.05, waves: 12, hearts: 10 },
+  easy: { hp: 0.8, grow: 0.13, count: 3, more: 1.5, speed: 0.9, waves: 15, hearts: 12 },
+  medium: { hp: 0.9, grow: 0.21, count: 3.5, more: 1.8, speed: 1, waves: 20, hearts: 10 },
+  hard: { hp: 0.9, grow: 0.27, count: 3.5, more: 2, speed: 1.05, waves: 25, hearts: 10 },
 };
 
 export const HEAL_COST = 25, HEAL_AMOUNT = 2;
@@ -157,14 +164,17 @@ function spawn(state, level, s) {
   });
 }
 
-function pickTarget(state, w) {
-  const inRange = state.enemies.filter(e => Math.hypot(e.x - GX, e.y - GY) - e.size <= w.range);
+function pickTarget(state, w, g) {
+  const away = e => Math.hypot(e.x - g.x, e.y - g.y);
+  const inRange = state.enemies.filter(e => away(e) - e.size <= w.range);
   if (!inRange.length) return null;
   const focus = inRange.find(e => e.id === state.focus);
   if (focus) return focus;
   if (w.target === 'strongest') return inRange.reduce((a, b) => (b.hp > a.hp ? b : a));
-  return inRange.reduce((a, b) => (Math.hypot(b.x - GX, b.y - GY) < Math.hypot(a.x - GX, a.y - GY) ? b : a));
+  return inRange.reduce((a, b) => (away(b) < away(a) ? b : a));
 }
+
+const garlics = state => Object.keys(state.weapons).map(garlicAt);
 
 export function step(state, level, dt) {
   if (state.phase !== 'fight') return;
@@ -176,30 +186,33 @@ export function step(state, level, dt) {
     spawn(state, level, wave.spawns[state.spawned++]);
   }
 
+  // Blocks head for the nearest garlic.
+  const gs = garlics(state);
+  const nearest = e => gs.reduce((a, b) => (Math.hypot(b.x - e.x, b.y - e.y) < Math.hypot(a.x - e.x, a.y - e.y) ? b : a));
   for (const e of state.enemies) {
-    const dx = GX - e.x, dy = GY - e.y, d = Math.hypot(dx, dy);
+    const g = nearest(e), dx = g.x - e.x, dy = g.y - e.y, d = Math.hypot(dx, dy);
     e.x += (dx / d) * e.speed * dt;
     e.y += (dy / d) * e.speed * dt;
     e.flash = Math.max(0, e.flash - dt);
   }
-  const reached = state.enemies.filter(e => Math.hypot(GX - e.x, GY - e.y) < GARLIC_R + e.size * 0.8);
+  const reached = state.enemies.filter(e => gs.some(g => Math.hypot(g.x - e.x, g.y - e.y) < GARLIC_R + e.size * 0.8));
   for (const e of reached) state.hearts -= e.harm;
   state.enemies = state.enemies.filter(e => !reached.includes(e));
 
   for (const id of Object.keys(state.weapons)) {
-    const o = state.weapons[id], w = stat(state, id);
+    const o = state.weapons[id], w = stat(state, id), g = garlicAt(id);
     o.cd -= dt;
     if (o.cd > 0) continue;
-    const target = pickTarget(state, w);
+    const target = pickTarget(state, w, g);
     if (!target) { o.cd = 0; continue; }
     o.cd = 1 / w.rate;
-    const base = Math.atan2(target.y - GY, target.x - GX);
+    const base = Math.atan2(target.y - g.y, target.x - g.x);
     o.aim = base;
     for (let k = 0; k < w.pellets; k++) {
       const off = w.pellets > 1 ? (k / (w.pellets - 1) - 0.5) * w.spread : (Math.random() - 0.5) * w.spread;
       const a = base + off;
       state.bullets.push({
-        x: GX, y: GY, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed,
+        x: g.x, y: g.y, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed,
         dmg: w.dmg, pierce: w.pierce, life: w.range / w.speed + 0.05, hit: [], kind: id,
       });
     }

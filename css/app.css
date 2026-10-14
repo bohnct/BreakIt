@@ -24,6 +24,7 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
 
 html, body {
   margin: 0;
@@ -131,9 +132,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .switch[aria-checked="true"] .knob { background: var(--bg); transform: translateX(22px); }
 
 /* Pans landing */
-.hero { display: flex; justify-content: center; padding: 8px 0 4px; }
-.swatches { display: flex; gap: 6px; }
-.swatches span { width: 22px; height: 22px; border-radius: 5px; }
+.hero { display: flex; justify-content: center; padding: 4px 0 0; color: var(--fg); }
+.hero-art { width: 200px; height: 88px; overflow: visible; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 .btn.continue { background: var(--fg); color: var(--bg); flex-direction: column; gap: 0; min-height: 64px; }
 .btn.continue:active { background: transparent; color: var(--fg); }
 .continue-sub { font-size: 13px; opacity: .65; font-variant-numeric: tabular-nums; }
@@ -219,15 +219,20 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .controls { display: flex; gap: 10px; width: 100%; max-width: 528px; }
 .controls .btn { flex: 1; }
 
+/* End-of-game card floats over the board so it's always on screen. */
 .win {
-  width: 100%; max-width: 528px; margin-top: 0;
+  position: absolute; left: 50%; top: 50%; z-index: 5;
+  transform: translate(-50%, -50%);
+  width: min(100%, 360px); margin: 0;
+  background: var(--bg);
   border-color: var(--fg); text-align: center;
-  animation: rise .25s ease-out;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+  animation: pop .25s ease-out;
 }
+@keyframes pop { from { opacity: 0; } }
 .win h2 { color: var(--fg); }
 .win-time { font-size: 44px; font-weight: 600; font-variant-numeric: tabular-nums; margin: 4px 0 8px; }
 .row-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
-@keyframes rise { from { transform: translateY(8px); opacity: 0; } }
 
 /* Block game */
 .bj-frame {
@@ -294,7 +299,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   background: var(--bg); border-color: var(--fg);
   display: flex; flex-direction: column; gap: 8px;
 }
-.gt-shop[hidden] { display: none; }
 .gt-shop-head { display: flex; justify-content: space-between; align-items: baseline; }
 .gt-coins { font-variant-numeric: tabular-nums; font-weight: 600; }
 .gt-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); padding-top: 8px; }
@@ -305,6 +309,80 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .gt-cost { font-size: 11px; opacity: .7; font-variant-numeric: tabular-nums; }
 .btn:disabled { opacity: .3; cursor: default; }
 .btn:disabled:active { background: transparent; color: var(--fg); }
+
+/* Card games */
+.sol-status { align-self: stretch; text-align: right; font-size: 13px; margin-bottom: -12px; font-variant-numeric: tabular-nums; }
+.sol-table { position: relative; touch-action: none; user-select: none; -webkit-user-select: none; }
+.sol-card, .sol-slot {
+  position: absolute; left: 0; top: 0;
+  width: var(--cw); height: var(--ch);
+  border-radius: calc(var(--cw) * .12);
+}
+/* Cards use the game palette: warm suits (hearts red, diamonds orange) against cool suits
+   (spades blue, clubs teal), with black text like the tiles in the other games. */
+.sol-card {
+  color: #000;
+  transition: transform .16s ease-out;
+  cursor: pointer;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+.sol-card.s0 { background: #577590; }
+.sol-card.s1 { background: #f94144; }
+.sol-card.s2 { background: #f8961e; }
+.sol-card.s3 { background: #43aa8b; }
+.sol-card.dragging { transition: none; }
+.sol-corner { position: absolute; left: 7%; top: 3%; font-size: calc(var(--cw) * .3); font-weight: 700; line-height: .95; text-align: center; }
+.sol-pip { position: absolute; right: 8%; bottom: 4%; font-size: calc(var(--cw) * .5); line-height: 1; }
+.sol-card.back { background: var(--tile); box-shadow: inset 0 0 0 1px var(--line); cursor: default; }
+.sol-card.back > * { visibility: hidden; }
+.sol-card.back::after {
+  content: ""; position: absolute; inset: 12%;
+  border: 1.5px solid var(--muted); opacity: .45; border-radius: calc(var(--cw) * .07);
+}
+.sol-slot {
+  border: 1.5px dashed var(--line); color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: calc(var(--cw) * .45);
+}
+.sol-slot.stock { cursor: pointer; }
+.sol-card.shake { animation: card-shake .3s; }
+@keyframes card-shake { 25% { margin-left: -4px; } 75% { margin-left: 4px; } }
+
+/* Hola */
+.hola { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.hola .sol-card { position: relative; flex-shrink: 0; transition: none; }
+.hola-score { display: flex; justify-content: space-between; align-items: baseline; font-variant-numeric: tabular-nums; font-size: 15px; }
+.hola-side.us { font-weight: 700; }
+.hola-seats { display: flex; justify-content: space-between; gap: 8px; }
+.hola-seats.n2 { justify-content: center; }
+.hola-seats.n4 .seat2 { order: 2; }
+.hola-seats.n4 .seat3 { order: 3; }
+.hola-seat {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius); min-width: 92px;
+}
+.hola-seat.turn { border-color: var(--fg); }
+.hola-seat.winning .hola-name::after { content: " ★"; }
+.hola-name { font-size: 14px; white-space: nowrap; }
+.hola-backs { display: flex; gap: 3px; min-height: 16px; }
+.hola-backs i { width: 11px; height: 16px; border-radius: 3px; background: var(--tile); box-shadow: inset 0 0 0 1px var(--muted); }
+.hola-table { display: flex; gap: 12px; align-items: flex-start; min-height: calc(var(--ch) + 24px); }
+.hola-stock { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; }
+.hola-stock .sol-slot { position: relative; }
+.hola-trick { display: flex; flex-wrap: wrap; gap: 4px 0; flex: 1; }
+.hola-play { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-right: calc(var(--cw) * -.45); }
+.hola-play:last-child { margin-right: 0; }
+.hola-who { font-size: 11px; color: var(--muted); }
+.hola .sol-card.dim { filter: saturate(.25) brightness(.7); }
+.hola .sol-card.win-card { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
+.hola-msg { min-height: 22px; text-align: center; font-size: 15px; }
+.hola-actions { display: flex; gap: 10px; justify-content: center; min-height: 0; }
+.hola-actions:empty { display: none; }
+.hola-actions .btn { flex: 1; max-width: 200px; }
+.hola-hand { display: flex; justify-content: center; gap: 8px; min-height: var(--ch); }
+.hola-hand .sol-card.playable { cursor: pointer; }
+.hola-hand .sol-card.playable:active { transform: translateY(-4px); }
+.hola-hand .sol-card:not(.playable) { cursor: default; }
 
 /* Toast */
 #toast {

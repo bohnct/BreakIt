@@ -1,4 +1,5 @@
 import { h, header, fmtTime, chips, toggleChips, statTile, breakdown } from '../../js/ui.js';
+import { preview } from '../../js/previews.js';
 import { load, save } from '../../js/storage.js';
 import { summarize } from '../../js/stats.js';
 import { DIFFICULTIES } from './engine.js';
@@ -23,9 +24,7 @@ function renderLanding(el) {
   const saved = getSavedGame();
   el.append(
     header(TITLE, '#/'),
-    h('div', { class: 'hero' },
-      h('div', { class: 'swatches' },
-        ['#90be6d', '#f94144', '#f8961e', '#f9c74f'].map(c => h('span', { style: `background:${c};border-radius:50%` })))),
+    preview('towers'),
     h('nav', { class: 'list' },
       saved && h('a', { class: 'btn big continue', href: `${HOME}/play?resume=1&k=${Date.now()}` },
         h('span', {}, 'Continue'),
@@ -37,7 +36,8 @@ function renderLanding(el) {
       h('summary', {}, 'How to play'),
       h('p', {}, 'You are green. Every tower you own builds up units over time, faster as it grows bigger (the dots above a tower show its level).'),
       h('p', {}, 'Drag from one of your towers to any other tower to send half its units. Sweep across several of your towers on the way to send from all of them at once.'),
-      h('p', {}, 'Units knock one off an enemy or grey tower each, and take it over when it runs out. Sending to your own tower tops it up. Armies meeting head-on cancel out.'),
+      h('p', {}, 'Units knock one off a grey tower each and take it over when it runs out. Towers someone owns defend better: each attacker only knocks off a bit less than one. Sending to your own tower tops it up. Armies meeting head-on cancel out.'),
+      h('p', {}, 'A tower holds at most 60 units, so spreading out to more towers beats piling up in one. Sweep several towers together to break a strong one.'),
       h('p', {}, 'Square towers are factories: they build twice as fast, but every attacker knocks two off them. Grey lines are walls you can\'t send through.'),
       h('p', {}, 'Take every rival tower to win. Lose all of yours and Carter wins.')));
 }
@@ -66,7 +66,7 @@ function renderCustom(el) {
     h('section', { class: 'card' },
       h('h2', {}, 'Difficulty'),
       chips(DIFFICULTIES.map(d => ({ value: d, label: cap(d) })), cfg.difficulty, 'Difficulty', v => { cfg.difficulty = v; }),
-      h('p', { class: 'muted' }, 'Easy rivals are slow and careless and you start with extra units. Hard rivals react fast, gang up on targets, defend, and start with extra units.')),
+      h('p', { class: 'muted' }, 'Everyone starts with the same units; only how well rivals play changes. Easy rivals are slow and careless. Medium rivals team up their towers and defend. Hard rivals react fast, wait for a clear advantage, and never leave a tower open to a counter-attack.')),
     h('section', { class: 'card' },
       h('h2', {}, 'Map features'),
       toggleChips(OBSTACLES, obstacles, 'Map features')),

@@ -2,8 +2,8 @@
 //
 // Towers belong to a side (1 = player, 2+ = computer opponents) or nobody (0). Owned towers grow
 // units over time, faster as they level up. Sending from a tower marches half its units to
-// another tower: they add to a friendly tower and knock one off anyone else's, capturing it
-// when it drops below zero. Groups heading opposite ways between the same two towers cancel out
+// another tower: they add to a friendly tower and knock units off anyone else's (owned towers
+// defend better than neutral ones), capturing it when it drops below zero. Groups heading opposite ways between the same two towers cancel out
 // where they meet. Factories grow twice as fast but each attacker knocks two off them.
 // Walls block the path between two towers. A side with no towers and no units on the move is out.
 //
@@ -11,25 +11,34 @@
 
 export const W = 100, H = 150;
 export const PLAYER = 1;
-export const MAX_UNITS = 99;
-const LEVEL_AT = [10, 30, 60];
-const GROWTH = [0.6, 0.8, 1.0, 1.25]; // units per second, by level
 const SPEED = 12; // map units per second
 const SPACING = 2.4; // map units between marching units
 const GRACE = 3; // seconds before opponents make their first move
 
-export const DIFFICULTIES = ['easy', 'medium', 'hard'];
-const AI = {
-  // head: opponents' extra starting units (negative gives the player the extra units instead)
-  easy: { every: 4.5, margin: 0.9, defend: false, pool: false, minSend: 8, head: -8, sloppy: true },
-  medium: { every: 2, margin: 1.2, defend: true, pool: false, minSend: 6, head: 0 },
-  hard: { every: 0.9, margin: 1.05, defend: true, pool: true, minSend: 4, head: 8 },
+// Balance. Everyone starts equal; owning more towers matters more than piling units into one
+// (growth is fairly flat and each tower is capped), and attacking an owned tower costs more
+// than defending it, so where and when you attack matters more than raw numbers.
+export const RULES = {
+  start: 10, // every side's starting units
+  maxUnits: 60, // most units a tower can hold
+  levelAt: [10, 25, 45], // unit counts where a tower levels up
+  growth: [0.8, 0.9, 1.0, 1.1], // units per second, by level (factories double it)
+  defence: 0.85, // what each attacker knocks off an owned tower (neutral towers take 1)
+  neutral: [5, 20], // neutral towers' units, low to high
 };
 
-export const level = t => (t.units >= LEVEL_AT[2] ? 3 : t.units >= LEVEL_AT[1] ? 2 : t.units >= LEVEL_AT[0] ? 1 : 0);
+export const DIFFICULTIES = ['easy', 'medium', 'hard'];
+const AI = {
+  easy: { every: 4.5, margin: 0.9, defend: false, pool: false, minSend: 8, sloppy: true },
+  medium: { every: 2, margin: 1.2, defend: true, pool: true, minSend: 6 },
+  hard: { every: 0.7, margin: 1.35, defend: true, pool: true, minSend: 8, careful: true },
+};
+
+export const level = t => RULES.levelAt.filter(n => t.units >= n).length;
 export const radius = t => 5.2 + level(t) * 0.9;
-const growth = t => GROWTH[level(t)] * (t.factory ? 2 : 1);
-const hit = t => (t.factory ? 2 : 1);
+const growth = t => RULES.growth[level(t)] * (t.factory ? 2 : 1);
+// What one attacking unit knocks off tower t.
+const hit = t => (t.factory ? 2 : 1) * (t.owner ? RULES.defence : 1);
 
 const rand = k => Math.floor(Math.random() * k);
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -90,7 +99,7 @@ export function step(state, dt, aiLevel) {
   const { towers } = state;
 
   for (const t of towers) {
-    if (t.owner) t.units = Math.min(MAX_UNITS, t.units + growth(t) * dt);
+    if (t.owner) t.units = Math.min(RULES.maxUnits, t.units + growth(t) * dt);
   }
 
   for (const u of state.moving) u.p += (SPEED * dt) / dist(towers[u.from], towers[u.to]);
@@ -121,7 +130,7 @@ export function step(state, dt, aiLevel) {
     if (u.p < 1) { still.push(u); continue; }
     const t = towers[u.to];
     if (t.owner === u.owner) {
-      t.units = Math.min(MAX_UNITS, t.units + 1);
+      t.units = Math.min(RULES.maxUnits, t.units + 1);
     } else {
       t.units -= hit(t);
       if (t.units < 0) {
@@ -133,9 +142,10 @@ export function step(state, dt, aiLevel) {
   state.moving = still;
 
   const thinkers = [...Array(state.sides).keys()].map(k => k + 2);
-  if (state.autoPlayer) thinkers.push(PLAYER); // the fairness check plays both sides
+  // Headless test games also play the player's side (autoPlayer: true = medium, or a level name).
+  if (state.autoPlayer) thinkers.push(PLAYER);
   for (const s of thinkers) {
-    const cfg = s === PLAYER ? AI.medium : AI[aiLevel];
+    const cfg = s === PLAYER ? AI[state.autoPlayer === true ? 'medium' : state.autoPlayer] : AI[aiLevel];
     state.ai[s] = (state.ai[s] ?? GRACE + cfg.every * Math.random()) - dt;
     if (state.ai[s] <= 0 && alive(state, s)) {
       think(state, s, cfg);
@@ -187,7 +197,13 @@ function think(state, owner, cfg) {
     return Math.max(0, (t.units + grow + (t.owner ? hostile * 0.5 : 0)) / hit(t) - friendly);
   };
 
-  const ready = mine.filter(i => !used.has(i) && towers[i].units >= cfg.minSend)
+  // Careful opponents won't empty a tower that an enemy next door could then take straight away.
+  const exposed = k => {
+    const t = towers[k], left = t.units - Math.floor(t.units / 2);
+    return towers.some((e, j) => e.owner && e.owner !== owner && clearPath(state, j, k) &&
+      dist(e, t) < 45 && Math.floor(e.units / 2) * hit(t) > left);
+  };
+  const ready = mine.filter(i => !used.has(i) && towers[i].units >= cfg.minSend && !(cfg.careful && exposed(i)))
     .sort((a, b) => towers[b].units - towers[a].units);
   for (const i of ready) {
     if (used.has(i)) continue;
@@ -265,13 +281,13 @@ function buildMap(o) {
     starts.push(best);
   }
   if (dist(towers[starts[0]], towers[starts[1]]) < 55) return null;
-  const head = AI[o.difficulty]?.head ?? 0;
   starts.forEach((i, k) => {
     towers[i].owner = k + 1;
-    towers[i].units = 15 + (k === 0 ? Math.max(0, -head) : Math.max(0, head));
+    towers[i].units = RULES.start;
   });
   const neutral = towers.filter(t => !t.owner);
-  for (const t of neutral) t.units = 4 + rand(14);
+  const [lo, hi] = RULES.neutral;
+  for (const t of neutral) t.units = lo + rand(hi - lo + 1);
   // Factories go on neutral towers, and cost a bit more to take.
   if (o.factories) {
     for (const t of neutral.sort(() => Math.random() - 0.5).slice(0, Math.max(1, Math.round(towers.length / 6)))) {

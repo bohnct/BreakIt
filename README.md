@@ -31,25 +31,42 @@ Drag coloured blocks around a walled board to the door of their colour. A block 
 **Kelsey VS Carter**: a remake of Tower War.
 Your towers (green) build up units over time. Drag from a tower to send half its units to another tower. Sweep across several of your towers on the way to send from all of them.
 
-- **Combat:** units knock one off an enemy or neutral tower each and capture it when it runs out. Sending to your own tower reinforces it, and armies meeting head-on cancel out.
+- **Combat:** units knock one off a neutral tower each, but owned towers defend better (0.85 per attacker). A tower is captured when it runs out. Sending to your own tower reinforces it, and armies meeting head-on cancel out.
+- **Balance:** everyone starts with 10 units. Towers hold at most 60 and growth is fairly flat, so more towers beats bigger towers. Difficulty only changes how well rivals play.
 - **Tower levels:** towers level up as they grow, which makes them build units faster.
 - **Map features (optional):**
   - **Walls** block sending.
   - **Factories** (square towers) build twice as fast but take double damage.
 - **Rivals:** 1 to 3 computer opponents, which also fight each other.
-  - **Easy:** slow and careless, and you start with extra units.
-  - **Medium:** steady, and defends its towers.
-  - **Hard:** reacts fast, gangs up on targets, and starts with extra units.
+  - **Easy:** slow and careless.
+  - **Medium:** teams up its towers and defends.
+  - **Hard:** reacts fast, waits for a clear advantage, and never leaves a tower open to a counter-attack.
 - **Maps:** generated on the device, with the starting area balanced between sides. Two computer players test-play each map, and lopsided maps are thrown away.
 
 **Protect My Garlic!**: a remake of Geometry Tower.
-Blocks march in from every side toward your garlic, and each one that reaches it costs hearts. Your weapons fire automatically; tap a block to make them all focus on it.
+Blocks march in from every side toward the nearest garlic, and each one that reaches a garlic costs hearts (all garlics share them). Every gun sits on its own garlic and fires automatically; tap a block to make them all focus on it. Blocks fade from bright to dim as they take damage, and only the big ones show a number.
 
-- **Shop:** between waves, coins from kills buy a shotgun, sniper or machine gun, plus damage and rate-of-fire upgrades for each weapon, or heal the garlic. Nothing carries over between levels, and you always start with a handgun.
+- **Shop:** between waves, coins from kills buy a shotgun (very short range), sniper (whole map) or machine gun (long range), each on a new garlic. Each gun also has damage and rate-of-fire upgrades, and you can heal. Nothing carries over between levels, and you always start with one garlic and a handgun.
 - **Enemies:** scouts (fast), blocks, brutes (tough), splitters (break into scouts) and a boss on the last wave.
-- **Difficulty:** sets enemy health, numbers and speed, how quickly they get stronger each wave, how many waves there are, and the garlic's hearts.
+- **Difficulty:** sets enemy health, numbers and speed, how quickly they get stronger each wave, the garlic's hearts, and the number of waves (Easy 15, Medium 20, Hard 25; custom levels allow 10 to 40).
 - **Random level:** Medium or Hard.
 - **Custom level:** pick the difficulty, number of waves, and whether brutes, splitters and the boss appear.
+
+**Babas Game**: Klondike solitaire.
+Tap the deck to turn cards over. Tap a card to send it to the best place, or drag it. Undo is included, and the game finishes itself once every card is face up. Cards use the game palette: hearts red and diamonds orange (warm) against spades blue and clubs teal (cool).
+
+- **Random deal:** draw 1 or 3 with unlimited passes, always winnable. A solver checks each deal first.
+- **Custom deal:** pick draw 1 or 3, unlimited, 3 or 1 passes through the deck, and always-winnable or any deal.
+
+**Gedos Game**: Hola, with only sevens wild.
+Play 1 v 1 against Gedo, or 2 v 2 with Gedo as your partner against Kelsey and Carter. Only a card of the led rank, or a seven, takes a trick over. After each round the leader takes the trick or fights on. Aces and tens score 10, the last trick of each hand scores 10, and taking every trick (a Hola) scores 170.
+
+- **Custom game:** pick 1 v 1 or 2 v 2, a target of 150, 300 or 500, and a difficulty.
+- **Difficulty:** Easy players are careless, Medium players fight for points and feed their partner, and Hard players also remember every card played.
+
+Each game's menu opens with a small preview of the game.
+
+An unfinished game saves itself whenever you leave it: the back arrow, switching apps, or closing the app. That game's page then shows a Continue button. Starting a new game replaces the saved one.
 
 No game has a countdown timer. Each one shows how long you've been playing, which feeds your stats.
 

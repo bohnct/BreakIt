@@ -1,6 +1,7 @@
 import { h, header, fmtTime } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
+import { autosave } from '../../js/autosave.js';
 import { generate, DIFFICULTIES } from './generator.js';
 import { recordStart, recordWin } from './stats.js';
 
@@ -87,7 +88,6 @@ export function mountBoard(el, query) {
   }
 
   let alive = true;
-  let saveProgress = null;
   const cleanups = [];
   const timerEl = h('span', { class: 'timer' }, '0:00');
   const bar = header(`${n}×${n} · ${cap(difficulty)}`, HOME);
@@ -108,6 +108,7 @@ export function mountBoard(el, query) {
     generateAsync(n, difficulty).then(puzzle => {
       if (!alive) return;
       recordStart();
+      remove(SAVE_KEY); // a new game replaces any unfinished one
       startGame(puzzle);
     });
   }
@@ -120,10 +121,11 @@ export function mountBoard(el, query) {
     const history = [];
     let seconds = resume?.seconds ?? 0, won = false;
 
-    saveProgress = () => {
+    const saveProgress = () => {
       if (won) return;
       save(SAVE_KEY, { mode, n, difficulty, puzzle, colours, state: [...state], seconds });
     };
+    cleanups.push(autosave(saveProgress));
 
     playtimer.start();
     cleanups.push(playtimer.onTick(showLimit));
@@ -258,6 +260,7 @@ export function mountBoard(el, query) {
     };
     function win() {
       won = true;
+      remove(SAVE_KEY);
       playtimer.stop();
       recordWin({ n, d: difficulty, s: seconds, m: mode });
       grid.classList.add('won');
@@ -282,8 +285,7 @@ export function mountBoard(el, query) {
   }
 
   return {
-    unmount(reason) {
-      if (reason === 'expired') saveProgress?.();
+    unmount() {
       alive = false;
       cleanups.forEach(fn => fn());
     },

@@ -1,8 +1,9 @@
 import { h, header, fmtTime } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
+import { autosave } from '../../js/autosave.js';
 import {
-  W, H, GX, GY, GARLIC_R, MAX_LEVEL, WEAPONS, WEAPON_ORDER, DIFFICULTIES, DIFF, HEAL_COST, HEAL_AMOUNT,
+  W, H, CY, GARLIC_R, garlicAt, MAX_LEVEL, WEAPONS, WEAPON_ORDER, DIFFICULTIES, DIFF, HEAL_COST, HEAL_AMOUNT,
   generateLevel, newGame, startWave, step, buyWeapon, buyUpgrade, buyHeal, upgradeCost,
 } from './engine.js';
 import { stats } from './stats.js';
@@ -13,11 +14,11 @@ const SAVE_KEY = 'games.garlic.saved';
 const COLOURS = { scout: '#f9c74f', block: '#f8961e', brute: '#f94144', splitter: '#43aa8b', boss: '#577590' };
 const BLURBS = {
   handgun: 'Steady single shots',
-  shotgun: 'Five pellets, short range',
-  sniper: 'Huge hits on the toughest block, goes through',
-  machinegun: 'Fast, light bullets',
+  shotgun: 'New garlic · five pellets, very short range',
+  sniper: 'New garlic · huge hits anywhere on the map',
+  machinegun: 'New garlic · fast, light bullets, long range',
 };
-export const WAVE_COUNTS = [5, 8, 10, 12, 15, 20];
+export const WAVE_COUNTS = [10, 15, 20, 25, 30, 40];
 export const ENEMY_TYPES = [
   { value: 'brutes', label: 'Brutes', key: 'b' },
   { value: 'splitters', label: 'Splitters', key: 's' },
@@ -46,7 +47,7 @@ export function customHref(o) {
 
 export function mountBoard(el, query) {
   const saved = query.get('resume') ? getSavedGame() : null;
-  if (saved) remove(SAVE_KEY);
+  remove(SAVE_KEY); // resumed, or replaced by this new game
   const mode = saved ? saved.mode : query.get('mode') === 'custom' ? 'custom' : 'random';
   const opts = saved ? saved.opts : optsFromQuery(query);
   const level = saved ? saved.level : generateLevel(opts);
@@ -87,7 +88,7 @@ export function mountBoard(el, query) {
   const size = () => {
     const availW = Math.min(window.innerWidth - 32, 528);
     const availH = window.innerHeight - 230;
-    scale = Math.max(2, Math.min(availW / W, availH / H));
+    scale = Math.max(0.5, Math.min(availW / W, availH / H));
     const dpr = window.devicePixelRatio || 1;
     canvas.style.width = `${W * scale}px`;
     canvas.style.height = `${H * scale}px`;
@@ -148,10 +149,11 @@ export function mountBoard(el, query) {
   };
   const font = (px, weight = 700) => `${weight} ${px}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
 
-  function drawGarlic(fg, muted) {
-    const R = GARLIC_R;
+  // One garlic per gun, with the gun pointing where it last fired.
+  function drawGarlic(id, fg, muted) {
+    const R = GARLIC_R, g = garlicAt(id);
     ctx.save();
-    ctx.translate(GX, GY);
+    ctx.translate(g.x, g.y);
     // Bulb with a pointed top, cloves marked by curved lines.
     ctx.beginPath();
     ctx.moveTo(0, -R * 1.45);
@@ -174,21 +176,23 @@ export function mountBoard(el, query) {
       ctx.stroke();
     }
     ctx.restore();
-    // Weapons point where they last fired.
+    const a = state.weapons[id].aim ?? -Math.PI / 2;
+    const len = { handgun: 3, shotgun: 3.2, sniper: 6, machinegun: 4 }[id];
     ctx.strokeStyle = fg;
     ctx.lineCap = 'round';
-    for (const id of WEAPON_ORDER) {
-      const o = state.weapons[id];
-      if (!o) continue;
-      const a = o.aim ?? -Math.PI / 2 + WEAPON_ORDER.indexOf(id) * 1.2;
-      const len = { handgun: 3, shotgun: 3.2, sniper: 5, machinegun: 3.8 }[id];
-      ctx.lineWidth = { handgun: 1.1, shotgun: 1.8, sniper: 0.9, machinegun: 1.4 }[id];
-      ctx.beginPath();
-      ctx.moveTo(GX + Math.cos(a) * (GARLIC_R + 0.5), GY + Math.sin(a) * (GARLIC_R + 0.5));
-      ctx.lineTo(GX + Math.cos(a) * (GARLIC_R + 0.5 + len), GY + Math.sin(a) * (GARLIC_R + 0.5 + len));
-      ctx.stroke();
-    }
+    ctx.lineWidth = { handgun: 1.1, shotgun: 2, sniper: 0.9, machinegun: 1.5 }[id];
+    ctx.beginPath();
+    ctx.moveTo(g.x + Math.cos(a) * (R + 0.5), g.y + Math.sin(a) * (R + 0.5));
+    ctx.lineTo(g.x + Math.cos(a) * (R + 0.5 + len), g.y + Math.sin(a) * (R + 0.5 + len));
+    ctx.stroke();
   }
+
+  // Blocks fade from bright to dim as they lose health.
+  const dimmed = (hex, frac) => {
+    const k = 0.3 + 0.7 * Math.max(0, Math.min(1, frac));
+    return `rgb(${[1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * k)).join(',')})`;
+  };
+  const SHOW_NUMBER = new Set(['brute', 'splitter', 'boss']);
 
   function draw() {
     const fg = css('--fg'), muted = css('--muted');
@@ -197,7 +201,7 @@ export function mountBoard(el, query) {
     for (const e of state.enemies) {
       const s = e.size;
       roundRect(e.x - s, e.y - s, s * 2, s * 2, s * 0.35);
-      ctx.fillStyle = e.flash > 0 ? '#ffffff' : COLOURS[e.type];
+      ctx.fillStyle = e.flash > 0 ? '#ffffff' : dimmed(COLOURS[e.type], e.hp / e.max);
       ctx.fill();
       if (e.id === state.focus) {
         ctx.strokeStyle = fg;
@@ -205,7 +209,8 @@ export function mountBoard(el, query) {
         roundRect(e.x - s - 1.3, e.y - s - 1.3, s * 2 + 2.6, s * 2 + 2.6, s * 0.5);
         ctx.stroke();
       }
-      ctx.fillStyle = '#000';
+      if (!SHOW_NUMBER.has(e.type)) continue;
+      ctx.fillStyle = e.hp / e.max > 0.45 ? '#000' : '#fff';
       ctx.font = font(Math.max(2.2, s * 0.8));
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -219,24 +224,24 @@ export function mountBoard(el, query) {
       ctx.fill();
     }
 
-    drawGarlic(fg, muted);
+    for (const id of WEAPON_ORDER) if (state.weapons[id]) drawGarlic(id, fg, muted);
 
     // Status along the top: wave, hearts, coins.
     ctx.fillStyle = fg;
-    ctx.font = font(4, 600);
+    ctx.font = font(W * 0.04, 600);
     ctx.textBaseline = 'top';
     ctx.textAlign = 'left';
-    ctx.fillText(`Wave ${Math.min(state.wave + 1, level.waves.length)}/${level.waves.length}`, 2, 2);
+    ctx.fillText(`Wave ${Math.min(state.wave + 1, level.waves.length)}/${level.waves.length}`, 3, 3);
     ctx.textAlign = 'center';
-    ctx.fillText(`♥ ${state.hearts}`, W / 2, 2);
+    ctx.fillText(`♥ ${state.hearts}`, W / 2, 3);
     ctx.textAlign = 'right';
-    ctx.fillText(`● ${state.coins}`, W - 2, 2);
+    ctx.fillText(`● ${state.coins}`, W - 3, 3);
 
     if (paused && !over) {
-      ctx.font = font(7, 600);
+      ctx.font = font(W * 0.065, 600);
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('Paused', W / 2, GY - 22);
+      ctx.fillText('Paused', W / 2, CY - H * 0.15);
     }
   }
 
@@ -265,7 +270,7 @@ export function mountBoard(el, query) {
     const r = canvas.getBoundingClientRect();
     const x = (e.clientX - r.left) / scale, y = (e.clientY - r.top) / scale;
     const hitE = state.enemies
-      .filter(en => Math.abs(en.x - x) < en.size + 3 && Math.abs(en.y - y) < en.size + 3)
+      .filter(en => Math.abs(en.x - x) < en.size + 5 && Math.abs(en.y - y) < en.size + 5)
       .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];
     state.focus = hitE ? hitE.id : null;
   });
@@ -274,6 +279,7 @@ export function mountBoard(el, query) {
 
   function finish() {
     over = true;
+    remove(SAVE_KEY);
     playtimer.stop();
     controls.hidden = true;
     shop.hidden = true;
@@ -314,10 +320,12 @@ export function mountBoard(el, query) {
   renderShop();
   playtimer.start();
   raf = requestAnimationFrame(tick);
+  cleanups.push(autosave(() => {
+    if (!over) save(SAVE_KEY, { mode, opts, level, state });
+  }));
 
   return {
-    unmount(reason) {
-      if (reason === 'expired' && !over) save(SAVE_KEY, { mode, opts, level, state });
+    unmount() {
       cleanups.forEach(fn => fn());
     },
   };

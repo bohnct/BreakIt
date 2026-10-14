@@ -1,4 +1,5 @@
 import { h, header, fmtTime, chips, toggleChips, statTile, breakdown } from '../../js/ui.js';
+import { preview } from '../../js/previews.js';
 import { load, save } from '../../js/storage.js';
 import { summarize } from '../../js/stats.js';
 import { maxBlocks, DIFFICULTIES } from './engine.js';
@@ -22,9 +23,7 @@ function renderLanding(el) {
   const saved = getSavedGame();
   el.append(
     header(TITLE, '#/'),
-    h('div', { class: 'hero' },
-      h('div', { class: 'swatches' },
-        ['#f94144', '#f9c74f', '#577590', '#90be6d', '#f8961e', '#43aa8b'].map(c => h('span', { style: `background:${c}` })))),
+    preview('blocks'),
     h('nav', { class: 'list' },
       saved && h('a', { class: 'btn big continue', href: `${HOME}/play?resume=1&k=${Date.now()}` },
         h('span', {}, 'Continue'),

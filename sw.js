@@ -1,5 +1,5 @@
 // Offline cache. Add new files to FILES; bump VERSION to drop old caches.
-const VERSION = 'v5';
+const VERSION = 'v8';
 const CACHE = `games-${VERSION}`;
 const FILES = [
   './',
@@ -7,6 +7,7 @@ const FILES = [
   'manifest.webmanifest',
   'css/app.css',
   'js/app.js',
+  'js/autosave.js',
   'js/games.js',
   'js/playtimer.js',
   'js/settings.js',
@@ -28,6 +29,16 @@ const FILES = [
   'games/garlic/board.js',
   'games/garlic/engine.js',
   'games/garlic/stats.js',
+  'games/solitaire/index.js',
+  'games/solitaire/board.js',
+  'games/solitaire/engine.js',
+  'games/solitaire/stats.js',
+  'games/solitaire/worker.js',
+  'js/previews.js',
+  'games/hola/index.js',
+  'games/hola/board.js',
+  'games/hola/engine.js',
+  'games/hola/stats.js',
   'games/pans/index.js',
   'games/pans/board.js',
   'games/pans/generator.js',

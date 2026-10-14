@@ -30,6 +30,20 @@ export const games = [
     statsKey: 'games.garlic.stats',
     load: () => import('../games/garlic/index.js'),
   },
+  {
+    id: 'solitaire',
+    title: 'Babas Game',
+    blurb: 'Classic solitaire',
+    statsKey: 'games.solitaire.stats',
+    load: () => import('../games/solitaire/index.js'),
+  },
+  {
+    id: 'hola',
+    title: 'Gedos Game',
+    blurb: 'Hola, with sevens wild',
+    statsKey: 'games.hola.stats',
+    load: () => import('../games/hola/index.js'),
+  },
 ];
 
 export const getGame = id => games.find(g => g.id === id);

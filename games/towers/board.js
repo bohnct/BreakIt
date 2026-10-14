@@ -1,6 +1,7 @@
 import { h, header, fmtTime, toast } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
+import { autosave } from '../../js/autosave.js';
 import { W, H, PLAYER, DIFFICULTIES, newGame, step, send, clearPath, generateMap, level, radius } from './engine.js';
 import { stats } from './stats.js';
 
@@ -63,7 +64,6 @@ export function mountBoard(el, query) {
   const opts = saved ? saved.opts : optsFromQuery(query);
 
   let alive = true;
-  let saveProgress = null;
   const cleanups = [];
   const timerEl = h('span', { class: 'timer' }, '0:00');
   const vs = opts.enemies === 1 ? '1 rival' : `${opts.enemies} rivals`;
@@ -83,6 +83,7 @@ export function mountBoard(el, query) {
     generateAsync(opts).then(map => {
       if (!alive) return;
       stats.recordStart();
+      remove(SAVE_KEY); // a new game replaces any unfinished one
       start(map);
     });
   }
@@ -97,7 +98,7 @@ export function mountBoard(el, query) {
     const size = () => {
       const availW = Math.min(window.innerWidth - 32, 528);
       const availH = window.innerHeight - 230;
-      scale = Math.max(2, Math.min(availW / W, availH / H));
+      scale = Math.max(0.5, Math.min(availW / W, availH / H));
       const dpr = window.devicePixelRatio || 1;
       canvas.style.width = `${W * scale}px`;
       canvas.style.height = `${H * scale}px`;
@@ -286,6 +287,7 @@ export function mountBoard(el, query) {
 
     function finish() {
       over = true;
+      remove(SAVE_KEY);
       drag = null;
       playtimer.stop();
       controls.hidden = true;
@@ -309,9 +311,9 @@ export function mountBoard(el, query) {
       }
     }
 
-    saveProgress = () => {
+    cleanups.push(autosave(() => {
       if (!over) save(SAVE_KEY, { mode, opts, map, state });
-    };
+    }));
 
     stage.replaceChildren(canvas, controls);
     timerEl.textContent = fmtTime(state.time);
@@ -320,8 +322,7 @@ export function mountBoard(el, query) {
   }
 
   return {
-    unmount(reason) {
-      if (reason === 'expired') saveProgress?.();
+    unmount() {
       alive = false;
       cleanups.forEach(fn => fn());
     },

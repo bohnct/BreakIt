@@ -1,6 +1,7 @@
 import { h, header, fmtTime } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
+import { autosave } from '../../js/autosave.js';
 import { generateLevel, maxBlocks, buildOcc, fits, setOcc, doorAt, stepsFor, FREE, DIFFICULTIES } from './engine.js';
 import { stats } from './stats.js';
 
@@ -90,7 +91,6 @@ export function mountBoard(el, query) {
   const opts = saved ? saved.opts : optsFromQuery(query);
 
   let alive = true;
-  let saveProgress = null;
   const cleanups = [];
   const timerEl = h('span', { class: 'timer' }, '');
   const bar = header(`${opts.w}×${opts.h}`, HOME);
@@ -108,6 +108,7 @@ export function mountBoard(el, query) {
     generateAsync(opts).then(level => {
       if (!alive) return;
       stats.recordStart();
+      remove(SAVE_KEY); // a new game replaces any unfinished one
       start(level, shuffled(COLOURS).slice(0, opts.colours));
     });
   }
@@ -234,10 +235,9 @@ export function mountBoard(el, query) {
       playtimer.start();
     };
 
-    saveProgress = () => {
-      if (over) return;
-      save(SAVE_KEY, { mode, opts, level, palette, state: snapshot(), acc });
-    };
+    cleanups.push(autosave(() => {
+      if (!over) save(SAVE_KEY, { mode, opts, level, palette, state: snapshot(), acc });
+    }));
 
     // --- Moving blocks ---
     const exit = (id, door) => {
@@ -343,6 +343,7 @@ export function mountBoard(el, query) {
 
     function finish(card) {
       over = true;
+      remove(SAVE_KEY);
       drag = null;
       playtimer.stop();
       frame.classList.add('done');
@@ -372,8 +373,7 @@ export function mountBoard(el, query) {
   }
 
   return {
-    unmount(reason) {
-      if (reason === 'expired') saveProgress?.();
+    unmount() {
       alive = false;
       cleanups.forEach(fn => fn());
     },
