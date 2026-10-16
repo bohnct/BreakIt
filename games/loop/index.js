@@ -6,7 +6,7 @@ import { DIFFICULTIES } from './engine.js';
 import { stats } from './stats.js';
 import { mountBoard, getSavedGame, customHref, cap, OBSTACLES } from './board.js';
 
-export const TITLE = 'Circle Track';
+export const TITLE = 'Cleaning Up';
 const HOME = '#/game/loop';
 const CUSTOM_KEY = 'games.loop.custom';
 
@@ -36,8 +36,7 @@ function renderLanding(el) {
       h('p', {}, 'Trucks are parked around a track, each holding a mix of coloured cubes. Sort them so every truck holds a single colour.'),
       h('p', {}, 'Tap a truck to send its top cube (the one nearest the track) onto the track. It rides round in the direction of the arrows and drops into the first truck it reaches that is empty, or has the same colour on top, and has room. It skips its own truck on the first lap.'),
       h('p', {}, 'You choose which cube moves; the track decides where it lands. A truck that fills up with one colour drives away. Clear every truck to win.'),
-      h('p', {}, 'The count at the top shows how many trucks you have sorted out of how many there are to sort.'),
-      h('p', {}, 'Only a few cubes can be on the track at once (Easy 7, Medium 6, Hard 5). Cubes that no truck can take just keep going round, using up that space; if the track is full of them you\'re stuck.'),
+      h('p', {}, 'Only a few cubes can be on the track at once (Easy 7, Medium 6, Hard 5); the count at the top shows how many are on it now, out of how many are allowed. Cubes that no truck can take just keep going round, using up that space; if the track is full of them you\'re stuck.'),
       h('p', {}, 'A truck with a coloured roof (tinted and outlined in that colour) only takes cubes of that colour, so cubes of any other colour ride straight past it. Iced trucks are stuck until enough trucks have been sorted. Hidden trucks only show their top cube; once a cube has been seen it stays visible.'),
       h('p', {}, 'The number of trucks and colours changes from level to level, and every track is a new shape.')));
 }

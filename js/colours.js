@@ -1,4 +1,4 @@
-// High-contrast colours for games where telling cubes apart is the whole puzzle (Circle Track,
+// High-contrast colours for games where telling cubes apart is the whole puzzle (Cleaning Up,
 // Kelsey Blocked Me In Again!). Based on the app palette, but pushed further apart: red, orange
 // and yellow are separated in brightness as well as hue, blue is brighter, and purple replaces
 // teal, which was too close to green.

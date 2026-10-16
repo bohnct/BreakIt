@@ -32,12 +32,13 @@ function blocks() {
 }
 
 function mahjong() {
-  // A small stack of ivory tiles with coloured symbols, the top one picked.
+  // A small stack of ivory tiles with clothing on them (same shapes as the game), the top one picked.
+  const cloth = d => c => `<path transform="scale(.6) translate(-12 -12)" d="${d}" fill="${c}" stroke="${c}" stroke-linejoin="round"/>`;
   const sym = {
-    dot: c => `<circle cx="0" cy="0" r="4.5" fill="${c}"/>`,
-    square: c => `<rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="${c}"/>`,
-    diamond: c => `<path d="M0-5.5 5.5 0 0 5.5-5.5 0Z" fill="${c}"/>`,
-    ring: c => `<circle cx="0" cy="0" r="4" fill="none" stroke="${c}" stroke-width="2.4"/>`,
+    dot: cloth('M8.5 3.5Q12 6.5 15.5 3.5L21 6.8 19 10.8 16.8 9.8V20.5H7.2V9.8L5 10.8 3 6.8Z'),
+    square: cloth('M8 2.5H14V12.5L19.2 16Q21.3 17.7 19.8 19.8L18.6 21Q17 22.3 15.2 21.1L9 16.4Q8 15.6 8 14.3Z'),
+    diamond: cloth('M3 6.5H21V9.5Q17.2 11 14.8 17.5H9.2Q6.8 11 3 9.5Z'),
+    ring: cloth('M6 3H18L19.5 21H14.3L12 10 9.7 21H4.5Z'),
   };
   const tile = (x, y, s, c, sel = false) => `<g transform="translate(${x} ${y})"><rect x="-9" y="-11.5" width="18" height="23" rx="3.5" fill="#efe9dc" stroke="${sel ? 'currentColor' : 'none'}" stroke-width="1.6"/><rect x="-9" y="-11.5" width="18" height="23" rx="3.5" fill="none" stroke="#9c9481" stroke-width=".6"/>${sym[s](c)}</g>`;
   return [

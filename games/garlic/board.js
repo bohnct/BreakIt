@@ -15,7 +15,7 @@ const SAVE_KEY = 'games.garlic.saved';
 const COLOURS = { scout: SORT_COLOURS[1], block: SORT_COLOURS[4], brute: SORT_COLOURS[0], splitter: SORT_COLOURS[3], boss: SORT_COLOURS[2] };
 const BLURBS = {
   handgun: 'Steady single shots',
-  shotgun: 'New garlic · five pellets, very short range',
+  shotgun: 'New garlic · five pellets, short range',
   sniper: 'New garlic · huge hits anywhere on the map',
   machinegun: 'New garlic · fast, light bullets, long range',
 };
@@ -198,6 +198,21 @@ export function mountBoard(el, query) {
   function draw() {
     const fg = css('--fg'), muted = css('--muted');
     ctx.clearRect(0, 0, W, H);
+
+    // Faint range rings: how far each gun reaches from its garlic (the sniper reaches everywhere).
+    ctx.strokeStyle = fg;
+    ctx.globalAlpha = 0.13;
+    ctx.lineWidth = 0.35;
+    ctx.setLineDash([1.6, 1.6]);
+    for (const id of WEAPON_ORDER) {
+      if (!state.weapons[id] || WEAPONS[id].range >= Math.max(W, H)) continue;
+      const g = garlicAt(id);
+      ctx.beginPath();
+      ctx.arc(g.x, g.y, WEAPONS[id].range, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
 
     for (const e of state.enemies) {
       const s = e.size;

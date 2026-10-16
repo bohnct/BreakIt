@@ -6,7 +6,7 @@ import { DIFFICULTIES, SIZES } from './engine.js';
 import { stats } from './stats.js';
 import { mountBoard, getSavedGame, customHref, cap, SIZE_LABELS } from './board.js';
 
-export const TITLE = 'Block Game';
+export const TITLE = 'Folding Laundry';
 const HOME = '#/game/mahjong';
 const CUSTOM_KEY = 'games.mahjong.custom';
 
@@ -33,7 +33,7 @@ function renderLanding(el) {
       h('a', { class: 'btn big ghost', href: `${HOME}/stats` }, 'Stats')),
     h('details', { class: 'card how' },
       h('summary', {}, 'How to play'),
-      h('p', {}, 'Clear the board by matching pairs of identical tiles. Tap one tile, then its twin.'),
+      h('p', {}, 'Clear the pile by pairing up matching clothes: the same item in the same colour (a red sock goes with a red sock, not a blue one). Tap one tile, then its twin.'),
       h('p', {}, 'Only free tiles can be picked: nothing on top of them, and an open side on the left or right. Blocked tiles look darker.'),
       h('p', {}, 'Every board can be cleared. On Medium and Hard each design appears four times, so think about which two to match: the wrong pair can bury the tiles you need.'),
       h('p', {}, 'If you run out of matches you can undo, or shuffle the tiles that are left.')));

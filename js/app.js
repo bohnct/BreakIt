@@ -18,11 +18,14 @@ function parseHash() {
 function renderHome(el) {
   el.append(
     header('Games'),
-    h('nav', { class: 'list' },
+    // Two columns so every game fits on one phone screen; Settings fills the last spot.
+    h('nav', { class: 'list menu-grid' },
       games.map(g => h('a', { class: 'tile', href: `#/game/${g.id}` },
         h('span', { class: 'tile-title' }, g.title),
-        h('span', { class: 'tile-sub' }, g.blurb)))),
-    h('div', { class: 'foot' }, h('a', { class: 'btn ghost', href: '#/settings' }, 'Settings')));
+        h('span', { class: 'tile-sub' }, g.blurb))),
+      h('a', { class: 'tile ghost', href: '#/settings' },
+        h('span', { class: 'tile-title' }, 'Settings'),
+        h('span', { class: 'tile-sub' }, 'Theme, play time, stats'))));
 }
 
 async function route() {

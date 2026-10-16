@@ -1,4 +1,4 @@
-// Rules, track generator and level checker for "Circle Track" (a Loop Sort remake).
+// Rules, track generator and level checker for "Cleaning Up" (a Loop Sort remake).
 //
 // Trucks are parked around a closed loop of track, each holding a stack of mixed coloured
 // cubes (the cube nearest the track is the top). Tapping a truck sends its top cube onto the
@@ -89,7 +89,7 @@ function straightSpots(loop) {
 // --- Truck geometry -------------------------------------------------------
 
 // Where a truck's cubes sit, in grid units: k = 0 is the top cube, nearest the track.
-export const TRUCK = { gap: 0.55, step: 0.36, width: 0.5 };
+export const TRUCK = { gap: 0.78, step: 0.42, width: 0.58, cube: 0.38 };
 export const cubeSpot = (loop, t, k) => {
   const [x, y] = loop[t.at];
   const d = TRUCK.gap + k * TRUCK.step;
@@ -106,12 +106,12 @@ function truckFits(loop, t, cap, others) {
       const len2 = (bx - ax) ** 2 + (by - ay) ** 2;
       const u = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (y - ay) * (by - ay)) / len2));
       const d = Math.hypot(x - ax - u * (bx - ax), y - ay - u * (by - ay));
-      if (d < 0.45 && !(i === t.at || (i + 1) % loop.length === t.at)) return false;
+      if (d < 0.5 && !(i === t.at || (i + 1) % loop.length === t.at)) return false;
     }
     for (const o of others) {
       for (let m = 0; m < cap; m++) {
         const [ox, oy] = cubeSpot(loop, o, m);
-        if (Math.hypot(x - ox, y - oy) < 0.62) return false;
+        if (Math.hypot(x - ox, y - oy) < 0.7) return false;
       }
     }
   }

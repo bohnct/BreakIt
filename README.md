@@ -28,7 +28,7 @@ Drag coloured blocks around a walled board to the door of their colour. A block 
   - **Medium:** you must move blocks out of the way once or twice. Medium levels are built by playing a solution backwards from an empty board.
   - **Hard:** a board packed about 80% full. A planning solver proves it can be finished and measures how far ahead you must think. Hard keeps the board with the most "knots": points where no single move frees anything, so you have to plan two to four moves ahead. Hard levels typically have three to six knots and need 10 to 20 moves aside. Obstacles are added afterwards and kept only if the level is still solvable.
 
-**Block Game**: mahjong solitaire (tile matching).
+**Folding Laundry**: mahjong solitaire (tile matching). Tiles show clothing (T-shirts, socks, underwear, trousers, dresses and caps) in six colours; a pair is the same item in the same colour.
 Match pairs of identical free tiles to clear the board. A tile is free when nothing sits on top of it and its left or right side is open; blocked tiles look darker.
 
 - **Deals:** built by lifting pairs of free tiles off a full layout, so every board can be cleared.
@@ -39,7 +39,8 @@ Match pairs of identical free tiles to clear the board. A tile is free when noth
 **Protect My Garlic!**: a remake of Geometry Tower.
 Blocks march in from every side toward the nearest garlic, and each one that reaches a garlic costs hearts (all garlics share them). Every gun sits on its own garlic and fires automatically; tap a block to make them all focus on it. Blocks fade from bright to dim as they take damage, and only the big ones show a number.
 
-- **Shop:** between waves, coins from kills buy a shotgun (very short range), sniper (whole map) or machine gun (long range), each on a new garlic. Each gun also has damage and rate-of-fire upgrades, and you can heal. Nothing carries over between levels, and you always start with one garlic and a handgun.
+- **Shop:** between waves, coins from kills buy a shotgun (short range), sniper (whole map) or machine gun (long range), each on a new garlic. Faint dashed rings on the map show each gun's range. Each gun also has damage and rate-of-fire upgrades (every fifth damage upgrade also lets its bullets pass through one more block), and you can heal.
+- **Crowds:** waves are made of many slow, fairly weak blocks rather than a few fast tough ones, so the map stays busy. Each block drops half the coins it used to; the balance was tuned with a shopping bot to match the earlier win rates. Nothing carries over between levels, and you always start with one garlic and a handgun.
 - **Enemies:** scouts (fast), blocks, brutes (tough), splitters (break into scouts) and a boss on the last wave.
 - **Difficulty:** sets enemy health, numbers and speed, how quickly they get stronger each wave, the garlic's hearts, and the number of waves (Easy 15, Medium 20, Hard 25; custom levels allow 10 to 40).
 - **Random level:** Medium or Hard.
@@ -59,8 +60,8 @@ Play 1 v 1 against Gedo, or 2 v 2 with Gedo as your partner against Kelsey and C
 
 Each game's menu opens with a small preview of the game.
 
-**Circle Track**: a remake of Loop Sort.
-Trucks are parked around a closed track, each holding a mix of coloured cubes. Tap a truck to send its top cube (the one nearest the track) onto the track. The cube rides round and drops into the first truck it reaches that is empty, or has the same colour on top, and has room. It skips its own truck on the first lap. A truck filled with one colour drives away. Cubes visibly slide out of trucks onto the track and into the truck they land in. Sort every truck to win. Only a few cubes may be on the track at once, and cubes with nowhere to go keep using that space; if it's full of them you're stuck. The only button is Restart, and a count at the top (like 2/6) shows trucks sorted out of trucks to sort.
+**Cleaning Up**: a remake of Loop Sort.
+Trucks are parked around a closed track, each holding a mix of coloured cubes. Tap a truck to send its top cube (the one nearest the track) onto the track. The cube rides round and drops into the first truck it reaches that is empty, or has the same colour on top, and has room. It skips its own truck on the first lap. A truck filled with one colour drives away. Cubes visibly slide out of trucks onto the track and into the truck they land in. Sort every truck to win. Only a few cubes may be on the track at once, and cubes with nowhere to go keep using that space; if it's full of them you're stuck. The only button is Restart, and a count at the top (like 2/6) shows cubes on the track out of the most allowed.
 
 - **Tracks:** every level's track is a new shape, traced around a random blob of cells, with plenty of corners.
 - **Levels:** a solver proves each level can be sorted, playing within the track limit. The number of trucks and colours varies from level to level, and now and then you get a much bigger one. There are six colours, so past six truckloads a colour fills two trucks.

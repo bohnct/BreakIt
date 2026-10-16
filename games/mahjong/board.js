@@ -9,15 +9,25 @@ import { stats } from './stats.js';
 const HOME = '#/game/mahjong';
 const SAVE_KEY = 'games.mahjong.saved';
 const PAD = 14;
-// Tile designs: six symbols in six palette colours.
+// Tile designs: six clothing items in six palette colours. Each is a filled silhouette with a
+// faint darker detail line so it reads at small sizes.
 const COLOURS = SORT_COLOURS; // high-contrast set, see js/colours.js
+const shape = (c, d, detail = '') =>
+  `<path d="${d}" fill="${c}" stroke="${c}" stroke-width="1" stroke-linejoin="round"/>` +
+  (detail ? `<path d="${detail}" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="1.2" stroke-linecap="round"/>` : '');
 const SYMBOLS = [
-  c => `<circle cx="12" cy="12" r="7" fill="${c}"/>`,
-  c => `<rect x="5.5" y="5.5" width="13" height="13" rx="2.5" fill="${c}"/>`,
-  c => `<path d="M12 4 20.5 19.5H3.5Z" fill="${c}" stroke="${c}" stroke-linejoin="round" stroke-width="1.5"/>`,
-  c => `<path d="M12 2.5 21.5 12 12 21.5 2.5 12Z" fill="${c}"/>`,
-  c => `<path d="M9.5 3.5h5v6h6v5h-6v6h-5v-6h-6v-5h6z" fill="${c}"/>`,
-  c => `<circle cx="12" cy="12" r="6.5" fill="none" stroke="${c}" stroke-width="3.6"/>`,
+  // T-shirt
+  c => shape(c, 'M8.5 3.5Q12 6.5 15.5 3.5L21 6.8 19 10.8 16.8 9.8V20.5H7.2V9.8L5 10.8 3 6.8Z', 'M9.5 4.3Q12 6.6 14.5 4.3'),
+  // Sock
+  c => shape(c, 'M8 2.5H14V12.5L19.2 16Q21.3 17.7 19.8 19.8L18.6 21Q17 22.3 15.2 21.1L9 16.4Q8 15.6 8 14.3Z', 'M8.6 5.3H13.4'),
+  // Underwear
+  c => shape(c, 'M3 6.5H21V9.5Q17.2 11 14.8 17.5H9.2Q6.8 11 3 9.5Z', 'M3.6 8.6H20.4'),
+  // Trousers
+  c => shape(c, 'M6 3H18L19.5 21H14.3L12 10 9.7 21H4.5Z', 'M6.3 5.6H17.7'),
+  // Dress
+  c => shape(c, 'M9 2.8V5L7.8 9.5 4.5 21H19.5L16.2 9.5 15 5V2.8L12 4.6Z', 'M7.9 9.6H16.1'),
+  // Cap
+  c => shape(c, 'M4.5 15.5Q4.5 6.5 12 6.5Q18.5 6.5 19 13.5L21.5 15Q22.4 16.5 20.5 16.5H5.4Q4.5 16.5 4.5 15.5Z', 'M12 6.8V15.8M19 13.6V16.2'),
 ];
 export const SIZE_LABELS = { small: 'Small', medium: 'Medium', large: 'Large' };
 

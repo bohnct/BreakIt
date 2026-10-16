@@ -18,8 +18,8 @@ export const games = [
   },
   {
     id: 'mahjong',
-    title: 'Block Game',
-    blurb: 'Match the tiles, clear the board',
+    title: 'Folding Laundry',
+    blurb: 'Pair up the clothes, clear the pile',
     statsKey: 'games.mahjong.stats',
     load: () => import('../games/mahjong/index.js'),
   },
@@ -46,7 +46,7 @@ export const games = [
   },
   {
     id: 'loop',
-    title: 'Circle Track',
+    title: 'Cleaning Up',
     blurb: 'Sort the cubes before the track jams',
     statsKey: 'games.loop.stats',
     load: () => import('../games/loop/index.js'),

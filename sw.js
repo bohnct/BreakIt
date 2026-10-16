@@ -1,5 +1,5 @@
 // Offline cache. Add new files to FILES; bump VERSION to drop old caches.
-const VERSION = 'v13';
+const VERSION = 'v20';
 const CACHE = `games-${VERSION}`;
 const FILES = [
   './',

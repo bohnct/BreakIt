@@ -34,8 +34,8 @@ function renderLanding(el) {
     h('details', { class: 'card how' },
       h('summary', {}, 'How to play'),
       h('p', {}, 'Blocks march in from every side to squash your garlic. Each one that reaches a garlic costs hearts; bigger blocks cost more. Lose every heart and the level is over.'),
-      h('p', {}, 'Every gun sits on its own garlic and fires by itself at blocks in range. Tap a block to make every gun focus on it.'),
-      h('p', {}, 'Destroyed blocks drop coins. Between waves, spend them on a shotgun, sniper or machine gun (each arrives on a new garlic), on damage and rate-of-fire upgrades, or on healing. Everything resets each level, and you always start with one garlic and a handgun.'),
+      h('p', {}, 'Every gun sits on its own garlic and fires by itself at blocks in range; the faint dashed rings show how far each one reaches (the sniper reaches anywhere). Tap a block to make every gun focus on it.'),
+      h('p', {}, 'Destroyed blocks drop coins. Between waves, spend them on a shotgun, sniper or machine gun (each arrives on a new garlic), on damage and rate-of-fire upgrades, or on healing. Every fifth damage upgrade also lets that gun\'s bullets go through one more block. Everything resets each level, and you always start with one garlic and a handgun.'),
       h('p', {}, 'Blocks fade from bright to dim as they take damage. Yellow scouts are quick, orange blocks are steady, red brutes are tough, green splitters break into scouts, and blue bosses guard the last wave.')));
 }
 

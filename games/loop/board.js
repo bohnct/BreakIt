@@ -3,7 +3,7 @@ import { load, save, remove } from '../../js/storage.js';
 import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
 import { autosave } from '../../js/autosave.js';
-import { DIFFICULTIES, TRUCK, generateLevel, newGame, tick, tap, canTap, cubeSpot, trackFull } from './engine.js';
+import { DIFFICULTIES, TRUCK, generateLevel, newGame, tick, tap, canTap, cubeSpot, onTrack, trackFull } from './engine.js';
 import { stats } from './stats.js';
 
 const HOME = '#/game/loop';
@@ -97,8 +97,7 @@ export function mountBoard(el, query) {
 
     const canvas = h('canvas', { class: 'lp-canvas', 'aria-label': 'Track' });
     const ctx = canvas.getContext('2d');
-    // Trucks sorted out of all the truckloads there are to sort.
-    const total = level.trucks.reduce((a, t) => a + t.cubes.length, 0) / level.cap;
+    // Cubes on the track (or waiting to go out) out of the most allowed at once.
     const status = h('div', { class: 'lp-count' });
     const controls = h('div', { class: 'controls' },
       h('button', { class: 'btn', onclick: () => restart() }, 'Restart'));
@@ -106,9 +105,16 @@ export function mountBoard(el, query) {
 
     // --- Layout: fitted to the track and the trucks parked round it ---
     let unit = 40, ox = 0, oy = 0;
-    const PAD = 0.45;
+    const PAD = 0.4;
     const spots = level.trucks.flatMap(t => [...Array(level.cap).keys()].map(k => cubeSpot(level.loop, t, k)));
-    const xs = [...level.loop.map(p => p[0]), ...spots.map(p => p[0])], ys = [...level.loop.map(p => p[1]), ...spots.map(p => p[1])];
+    const all = [...level.loop, ...spots];
+    // Phones are tall, so a track that's wider than it is high is drawn turned on its side (x and
+    // y swapped), letting everything be drawn bigger.
+    const rawW = Math.max(...all.map(p => p[0])) - Math.min(...all.map(p => p[0]));
+    const rawH = Math.max(...all.map(p => p[1])) - Math.min(...all.map(p => p[1]));
+    const flip = rawW > rawH;
+    const turn = ([x, y]) => (flip ? [y, x] : [x, y]);
+    const xs = all.map(p => turn(p)[0]), ys = all.map(p => turn(p)[1]);
     const minX = Math.min(...xs), minY = Math.min(...ys), spanX = Math.max(...xs) - minX, spanY = Math.max(...ys) - minY;
     const size = () => {
       const availW = Math.min(window.innerWidth - 32, 528);
@@ -124,7 +130,7 @@ export function mountBoard(el, query) {
       ox = unit * (PAD - minX);
       oy = unit * (PAD - minY);
     };
-    const px = ([x, y]) => [ox + x * unit, oy + y * unit];
+    const px = p => { const [x, y] = turn(p); return [ox + x * unit, oy + y * unit]; };
     const pt = i => px(level.loop[((i % L) + L) % L]);
 
     const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -151,12 +157,26 @@ export function mountBoard(el, query) {
         ctx.closePath();
         ctx.stroke();
       };
+      // Each truck sits at the end of a short spur off the track, drawn like the road itself, whose
+      // fill runs into the main road so the two join up.
+      const spurs = () => {
+        ctx.beginPath();
+        for (const t of s.trucks) {
+          if (t.gone) continue;
+          const [ax, ay] = pt(t.at), [bx, by] = px(cubeSpot(level.loop, t, 0));
+          ctx.moveTo(ax, ay);
+          ctx.lineTo(bx, by);
+        }
+        ctx.stroke();
+      };
       ctx.strokeStyle = muted;
-      ctx.lineWidth = unit * 0.5;
+      ctx.lineWidth = unit * 0.54;
+      spurs();
       road();
       ctx.strokeStyle = tile;
-      ctx.lineWidth = unit * 0.44;
+      ctx.lineWidth = unit * 0.48;
       road();
+      spurs();
       ctx.fillStyle = line;
       for (let i = 0; i < L; i += 2) {
         const [x1, y1] = pt(i), [x2, y2] = pt(i + 1), a = Math.atan2(y2 - y1, x2 - x1);
@@ -170,6 +190,7 @@ export function mountBoard(el, query) {
         ctx.fill();
         ctx.restore();
       }
+
 
       // Trucks parked outside the loop. The cube nearest the track is the top one.
       const now = performance.now();
@@ -202,13 +223,13 @@ export function mountBoard(el, query) {
         for (let k = arriving; k < n; k++) {
           const idx = n - 1 - k, c = t.cubes[idx];
           const unknown = idx < (t.hiddenBelow || 0);
-          const [cx, cy] = px(cubeSpot(level.loop, t, k)), cs = unit * 0.3;
+          const [cx, cy] = px(cubeSpot(level.loop, t, k)), cs = unit * TRUCK.cube;
           rr(cx - cs / 2, cy - cs / 2, cs, cs, cs * 0.25);
           ctx.fillStyle = unknown ? muted : PALETTE[c];
           ctx.fill();
           if (unknown) {
             ctx.fillStyle = css('--bg');
-            ctx.font = font(0.2);
+            ctx.font = font(0.26);
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('?', cx, cy + 0.5);
@@ -241,7 +262,7 @@ export function mountBoard(el, query) {
         return [x1 + (x2 - x1) * f, y1 + (y2 - y1) * f];
       };
       const cube = (x, y, c, alpha = 1) => {
-        const cs = unit * 0.3;
+        const cs = unit * TRUCK.cube;
         ctx.globalAlpha = alpha;
         rr(x - cs / 2, y - cs / 2, cs, cs, cs * 0.25);
         ctx.fillStyle = PALETTE[c];
@@ -298,7 +319,10 @@ export function mountBoard(el, query) {
         }
       }
     }
-    const showStatus = () => { status.textContent = `${s.cleared}/${total}`; };
+    const showStatus = () => {
+      const riding = onTrack(s) + s.trucks.reduce((a, t) => a + t.pending, 0);
+      status.textContent = `${riding}/${level.limit}`;
+    };
 
     // --- Loop ---
     const frame = now => {
@@ -332,7 +356,7 @@ export function mountBoard(el, query) {
         if (t.gone) return;
         for (let k = 0; k < level.cap; k++) {
           const [cx, cy] = px(cubeSpot(level.loop, t, k)), d = Math.hypot(cx - x, cy - y);
-          if (d < unit * 0.42 && d < bestD) { best = i; bestD = d; }
+          if (d < unit * 0.46 && d < bestD) { best = i; bestD = d; }
         }
       });
       if (best < 0) return;

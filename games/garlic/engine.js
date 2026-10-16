@@ -17,7 +17,7 @@ export const MAX_LEVEL = 12;
 
 export const WEAPONS = {
   handgun: { name: 'Handgun', cost: 0, dmg: 4, rate: 2, range: 41 * Z, speed: 87 * Z, pellets: 1, spread: 0, pierce: 0, target: 'nearest' },
-  shotgun: { name: 'Shotgun', cost: 45, dmg: 2, rate: 0.9, range: 21 * Z, speed: 73 * Z, pellets: 5, spread: 0.55, pierce: 0, target: 'nearest' },
+  shotgun: { name: 'Shotgun', cost: 45, dmg: 2, rate: 0.9, range: 26 * Z, speed: 73 * Z, pellets: 5, spread: 0.55, pierce: 0, target: 'nearest' },
   sniper: { name: 'Sniper', cost: 70, dmg: 16, rate: 0.5, range: 400 * Z, speed: 213 * Z, pellets: 1, spread: 0, pierce: 2, target: 'strongest' },
   machinegun: { name: 'Machine gun', cost: 90, dmg: 1.1, rate: 7, range: 60 * Z, speed: 120 * Z, pellets: 1, spread: 0.12, pierce: 0, target: 'nearest' },
 };
@@ -47,8 +47,15 @@ export const HEAL_COST = 25, HEAL_AMOUNT = 2;
 export const upgradeCost = (kind, lv) => Math.round((kind === 'dmg' ? 20 : 18) * 1.55 ** lv);
 export const stat = (state, id) => {
   const w = WEAPONS[id], o = state.weapons[id];
-  return { ...w, dmg: w.dmg * (1 + 0.35 * o.dl), rate: w.rate * (1 + 0.25 * o.rl) };
+  // Every fifth damage upgrade also lets bullets pass through one more block.
+  return { ...w, dmg: w.dmg * (1 + 0.35 * o.dl), rate: w.rate * (1 + 0.25 * o.rl), pierce: w.pierce + Math.floor(o.dl / PIERCE_EVERY) };
 };
+export const PIERCE_EVERY = 5;
+
+// Crowds: waves are made of many weaker, slower blocks rather than a few strong fast ones, so
+// the map feels busy. Twice as many blocks, each slower, with less health and half the coins.
+// hp was tuned with a shopping bot so win rates and hearts left match the old balance.
+export const CROWD = { count: 2, hp: 0.85, speed: 0.65, value: 0.5 };
 
 const rand = k => Math.floor(Math.random() * k);
 
@@ -72,7 +79,7 @@ export function generateLevel(opts) {
   const waves = [];
   for (let w = 1; w <= N; w++) {
     const hpScale = D.hp * (1 + D.grow * (w - 1));
-    const budget = Math.round(D.count + D.more * (w - 1));
+    const budget = Math.round((D.count + D.more * (w - 1)) * CROWD.count);
     const length = 10 + w;
     const mix = [['scout', 3], ['block', 4]];
     if (opts.brutes !== false && w >= 3) mix.push(['brute', 1 + w / 5]);
@@ -91,7 +98,7 @@ export function generateLevel(opts) {
       const cluster = Math.random() < 0.25 ? 2 + rand(3) : 1;
       const [x0, y0] = edgePoint(), at = Math.random() * length;
       for (let k = 0; k < cluster; k++) {
-        spawns.push({ type, at: at + k * 0.35, x: x0 + (Math.random() - 0.5) * 6, y: y0 + (Math.random() - 0.5) * 6, hp: Math.ceil(ENEMIES[type].hp * hpScale) });
+        spawns.push({ type, at: at + k * 0.35, x: x0 + (Math.random() - 0.5) * 6, y: y0 + (Math.random() - 0.5) * 6, hp: Math.ceil(ENEMIES[type].hp * hpScale * CROWD.hp) });
       }
     }
     if (opts.bosses !== false && w === N) {
@@ -160,7 +167,8 @@ function spawn(state, level, s) {
   const e = ENEMIES[s.type];
   state.enemies.push({
     id: state.nextId++, type: s.type, x: s.x, y: s.y, hp: s.hp, max: s.hp,
-    size: e.size, speed: e.speed * level.speed, harm: e.harm, value: e.value, flash: 0,
+    size: e.size, speed: e.speed * level.speed * CROWD.speed, harm: e.harm,
+    value: s.type === 'boss' ? e.value : e.value * CROWD.value, flash: 0,
   });
 }
 
@@ -235,7 +243,10 @@ export function step(state, level, dt) {
   state.bullets = state.bullets.filter(b => b.life > 0);
   for (const e of state.enemies) {
     if (e.hp > 0) continue;
-    state.coins += e.value;
+    // Blocks can be worth part of a coin; the parts add up to whole coins.
+    state.loot = (state.loot || 0) + e.value;
+    state.coins += Math.floor(state.loot);
+    state.loot -= Math.floor(state.loot);
     state.kills++;
     if (e.type === 'splitter') {
       for (let k = 0; k < 2; k++) {
