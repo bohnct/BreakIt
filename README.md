@@ -23,25 +23,18 @@ Drag coloured blocks around a walled board to the door of their colour. A block 
   - **Walls** are fixed squares on the board.
 - **Random level:** Medium (6×8 to 7×9 boards, mostly full) or Hard (8×8 to 9×11 boards, packed full), with random colours and obstacles.
 - **Custom level:** pick the difficulty, board size (5×5 up to 9×11), number of blocks, colours and obstacles. Picking a difficulty suggests a matching board.
-- **Levels:** generated on the device by playing a solution backwards from an empty board, so every level is solvable. A solver that plays like a person counts how many times you must move a block out of the way:
-  - **Easy:** never.
-  - **Medium:** once or twice.
-  - **Hard:** three or more times, usually five to seven on the big boards.
+- **Levels:** every level is generated on the device and proven solvable.
+  - **Easy:** blocks can go straight out.
+  - **Medium:** you must move blocks out of the way once or twice. Medium levels are built by playing a solution backwards from an empty board.
+  - **Hard:** a board packed about 80% full. A planning solver proves it can be finished and measures how far ahead you must think. Hard keeps the board with the most "knots": points where no single move frees anything, so you have to plan two to four moves ahead. Hard levels typically have three to six knots and need 10 to 20 moves aside. Obstacles are added afterwards and kept only if the level is still solvable.
 
-**Kelsey VS Carter**: a remake of Tower War.
-Your towers (green) build up units over time. Drag from a tower to send half its units to another tower. Sweep across several of your towers on the way to send from all of them.
+**Block Game**: mahjong solitaire (tile matching).
+Match pairs of identical free tiles to clear the board. A tile is free when nothing sits on top of it and its left or right side is open; blocked tiles look darker.
 
-- **Combat:** units knock one off a neutral tower each, but owned towers defend better (0.85 per attacker). A tower is captured when it runs out. Sending to your own tower reinforces it, and armies meeting head-on cancel out.
-- **Balance:** everyone starts with 10 units. Towers hold at most 60 and growth is fairly flat, so more towers beats bigger towers. Difficulty only changes how well rivals play.
-- **Tower levels:** towers level up as they grow, which makes them build units faster.
-- **Map features (optional):**
-  - **Walls** block sending.
-  - **Factories** (square towers) build twice as fast but take double damage.
-- **Rivals:** 1 to 3 computer opponents, which also fight each other.
-  - **Easy:** slow and careless.
-  - **Medium:** teams up its towers and defends.
-  - **Hard:** reacts fast, waits for a clear advantage, and never leaves a tower open to a counter-attack.
-- **Maps:** generated on the device, with the starting area balanced between sides. Two computer players test-play each map, and lopsided maps are thrown away.
+- **Deals:** built by lifting pairs of free tiles off a full layout, so every board can be cleared.
+- **Difficulty:** Easy has two layers and every design is a single pair. Medium has three layers, and Hard stacks up to five; on both, each design appears four times, so matching the wrong two can bury tiles you need.
+- **Board size:** Small (~36 tiles), Medium (~64) or Large (~96).
+- **Stuck?** Undo, or shuffle the tiles that are left (the shuffle keeps the board clearable).
 
 **Protect My Garlic!**: a remake of Geometry Tower.
 Blocks march in from every side toward the nearest garlic, and each one that reaches a garlic costs hearts (all garlics share them). Every gun sits on its own garlic and fires automatically; tap a block to make them all focus on it. Blocks fade from bright to dim as they take damage, and only the big ones show a number.
@@ -65,6 +58,19 @@ Play 1 v 1 against Gedo, or 2 v 2 with Gedo as your partner against Kelsey and C
 - **Difficulty:** Easy players are careless, Medium players fight for points and feed their partner, and Hard players also remember every card played.
 
 Each game's menu opens with a small preview of the game.
+
+**Circle Track**: a remake of Loop Sort.
+Trucks are parked around a closed track, each holding a mix of coloured cubes. Tap a truck to send its top cube (the one nearest the track) onto the track. The cube rides round and drops into the first truck it reaches that is empty, or has the same colour on top, and has room. It skips its own truck on the first lap. A truck filled with one colour drives away. Cubes visibly slide out of trucks onto the track and into the truck they land in. Sort every truck to win. Only a few cubes may be on the track at once, and cubes with nowhere to go keep using that space; if it's full of them you're stuck. The only button is Restart, and a count at the top (like 2/6) shows trucks sorted out of trucks to sort.
+
+- **Tracks:** every level's track is a new shape, traced around a random blob of cells, with plenty of corners.
+- **Levels:** a solver proves each level can be sorted, playing within the track limit. The number of trucks and colours varies from level to level, and now and then you get a much bigger one. There are six colours, so past six truckloads a colour fills two trucks.
+  - **Easy:** 3–6 truckloads, 1–2 empty trucks, up to 7 cubes on the track. Forgiving.
+  - **Medium:** 4–7 truckloads, 0–1 empty trucks, 6 cubes on the track.
+  - **Hard:** 5–8 truckloads, 0–1 empty trucks, 5 cubes on the track, and hidden cubes always on. Hard levels are chosen against a "sensible" test player who always prefers taps that land straight away. When roof colours are on, Hard looks for levels where that player gets stuck about 60% of the time, so the obvious move is often a trap.
+- **Obstacles (optional):**
+  - **Roof colours:** a truck with a coloured roof only takes that colour. They turn up occasionally, about half of random Hard levels.
+  - **Ice:** iced trucks are stuck until enough trucks have been sorted.
+  - **Hidden:** hidden trucks only show their top cube; once a cube has been seen it stays visible.
 
 An unfinished game saves itself whenever you leave it: the back arrow, switching apps, or closing the app. That game's page then shows a Continue button. Starting a new game replaces the saved one.
 

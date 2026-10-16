@@ -1,5 +1,6 @@
 import { h, header, fmtTime } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
+import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
 import { autosave } from '../../js/autosave.js';
 import { generateLevel, maxBlocks, buildOcc, fits, setOcc, doorAt, stepsFor, FREE, DIFFICULTIES } from './engine.js';
@@ -10,7 +11,7 @@ const SAVE_KEY = 'games.blocks.saved';
 const PAD = 14; // frame padding in px; doors sit inside it
 const DOOR = 8; // door thickness in px
 // Colours from the same coolors palette, ordered so the first few are easy to tell apart.
-const COLOURS = ['#f94144', '#f9c74f', '#577590', '#90be6d', '#f8961e', '#43aa8b'];
+const COLOURS = SORT_COLOURS; // high-contrast set, see js/colours.js
 export const SIZES = [[5, 5], [6, 6], [6, 8], [7, 7], [7, 9], [8, 8], [8, 10], [9, 11]];
 // Random levels: harder means a bigger board, packed fuller.
 const RANDOM_SIZES = { medium: [[6, 8], [7, 7], [7, 9]], hard: [[8, 8], [8, 10], [9, 11]] };

@@ -1,5 +1,6 @@
 import { h, header, fmtTime } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
+import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
 import { autosave } from '../../js/autosave.js';
 import {
@@ -11,7 +12,7 @@ import { stats } from './stats.js';
 const HOME = '#/game/garlic';
 const SAVE_KEY = 'games.garlic.saved';
 // Enemy colours from the coolors palette.
-const COLOURS = { scout: '#f9c74f', block: '#f8961e', brute: '#f94144', splitter: '#43aa8b', boss: '#577590' };
+const COLOURS = { scout: SORT_COLOURS[1], block: SORT_COLOURS[4], brute: SORT_COLOURS[0], splitter: SORT_COLOURS[3], boss: SORT_COLOURS[2] };
 const BLURBS = {
   handgun: 'Steady single shots',
   shotgun: 'New garlic · five pellets, very short range',

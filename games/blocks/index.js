@@ -74,7 +74,7 @@ function renderCustom(el) {
         drawSizes();
         showBlocks();
       }),
-      h('p', { class: 'muted' }, 'Easy: every block can go straight out. Medium: one or two blocks must be moved out of the way first. Hard: a big, packed board where you\'ll need to move blocks aside three or more times to untangle it.')),
+      h('p', { class: 'muted' }, 'Easy: every block can go straight out. Medium: one or two blocks must be moved out of the way first. Hard: a big board packed tight, where you\'ll often find no single move helps and you have to plan several moves ahead (usually 10 to 20 moves aside in all).')),
     h('section', { class: 'card' },
       h('h2', {}, 'Board size'),
       sizeWrap),

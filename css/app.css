@@ -222,8 +222,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 
 /* End-of-game card floats over the board so it's always on screen. */
 .win {
-  position: absolute; left: 50%; top: 50%; z-index: 5;
-  transform: translate(-50%, -50%);
+  position: absolute; left: 50%; top: 4px; z-index: 50;
+  transform: translateX(-50%);
   width: min(100%, 360px); margin: 0;
   background: var(--bg);
   border-color: var(--fg); text-align: center;
@@ -288,8 +288,25 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 @keyframes peel { 40% { transform: scale(1.12); } }
 @keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 
-/* Tower game */
-.tw-canvas { display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+/* Circle Track */
+.lp-canvas { display: block; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.lp-count { align-self: stretch; text-align: center; font-size: 22px; font-weight: 700; letter-spacing: .02em; margin-bottom: -10px; font-variant-numeric: tabular-nums; }
+
+/* Mahjong: ivory tiles with palette-coloured symbols, stacked with a small offset per layer. */
+.mj-status { align-self: stretch; text-align: center; font-size: 13px; margin-bottom: -10px; }
+.mj-status.stuck { color: var(--fg); }
+.mj-board { position: relative; z-index: 0; user-select: none; -webkit-user-select: none; }
+.mj-tile {
+  position: absolute; width: var(--tw); height: var(--th);
+  display: flex; align-items: center; justify-content: center;
+  background: #efe9dc; border-radius: 16% / 13%;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .14), 2px 3px 0 #9c9481;
+  cursor: pointer; transition: transform .12s, filter .12s;
+}
+.mj-tile svg { width: 66%; height: 66%; }
+.mj-tile.blocked { filter: brightness(.6) saturate(.75); cursor: default; }
+.mj-tile.selected { transform: translateY(-4px); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg), 2px 5px 0 #9c9481; }
+.mj-tile.shake { animation: card-shake .3s; }
 
 /* Garlic game */
 .gt-wrap { position: relative; }
@@ -313,7 +330,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 
 /* Card games */
 .sol-status { align-self: stretch; text-align: right; font-size: 13px; margin-bottom: -12px; font-variant-numeric: tabular-nums; }
-.sol-table { position: relative; touch-action: none; user-select: none; -webkit-user-select: none; }
+/* z-index 0 keeps the cards' own stacking inside the table, so the win card always sits above. */
+.sol-table { position: relative; z-index: 0; touch-action: none; user-select: none; -webkit-user-select: none; }
 .sol-card, .sol-slot {
   position: absolute; left: 0; top: 0;
   width: var(--cw); height: var(--ch);

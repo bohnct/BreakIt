@@ -31,14 +31,20 @@ function blocks() {
     <rect x="94" y="40" width="12" height="12" rx="4" fill="${P.red}"/>`;
 }
 
-function towers() {
-  const dots = [0.25, 0.4, 0.55].map(t => `<circle cx="${52 + (100 - 52) * t}" cy="${52 + (24 - 52) * t}" r="1.8" fill="${P.green}"/>`).join('');
-  return `${dots}
-    <circle cx="52" cy="52" r="11" fill="${P.green}"/><text x="52" y="56" font-size="10" font-weight="700" text-anchor="middle" fill="#000">24</text>
-    <circle cx="100" cy="24" r="9" fill="var(--tile)" stroke="currentColor" stroke-opacity=".5"/><text x="100" y="27.5" font-size="9" font-weight="700" text-anchor="middle" fill="currentColor">7</text>
-    <rect x="62" y="6" width="16" height="16" rx="5" fill="var(--tile)" stroke="currentColor" stroke-opacity=".5"/><text x="70" y="17.5" font-size="8" font-weight="700" text-anchor="middle" fill="currentColor">12</text>
-    <circle cx="124" cy="50" r="10" fill="${P.red}"/><text x="124" y="53.5" font-size="9" font-weight="700" text-anchor="middle" fill="#000">18</text>
-    <line x1="84" y1="58" x2="96" y2="42" stroke="currentColor" stroke-opacity=".45" stroke-width="2.4" stroke-linecap="round"/>`;
+function mahjong() {
+  // A small stack of ivory tiles with coloured symbols, the top one picked.
+  const sym = {
+    dot: c => `<circle cx="0" cy="0" r="4.5" fill="${c}"/>`,
+    square: c => `<rect x="-4" y="-4" width="8" height="8" rx="1.5" fill="${c}"/>`,
+    diamond: c => `<path d="M0-5.5 5.5 0 0 5.5-5.5 0Z" fill="${c}"/>`,
+    ring: c => `<circle cx="0" cy="0" r="4" fill="none" stroke="${c}" stroke-width="2.4"/>`,
+  };
+  const tile = (x, y, s, c, sel = false) => `<g transform="translate(${x} ${y})"><rect x="-9" y="-11.5" width="18" height="23" rx="3.5" fill="#efe9dc" stroke="${sel ? 'currentColor' : 'none'}" stroke-width="1.6"/><rect x="-9" y="-11.5" width="18" height="23" rx="3.5" fill="none" stroke="#9c9481" stroke-width=".6"/>${sym[s](c)}</g>`;
+  return [
+    tile(44, 44, 'dot', P.red), tile(64, 44, 'square', P.blue), tile(84, 44, 'ring', P.teal), tile(104, 44, 'diamond', P.amber), tile(124, 44, 'dot', P.green),
+    tile(61, 39, 'diamond', P.amber), tile(81, 39, 'square', P.red), tile(101, 39, 'ring', P.teal),
+    tile(78, 34, 'dot', P.red, true),
+  ].join('');
 }
 
 function garlic() {
@@ -66,7 +72,23 @@ function hola() {
   return card(56, 36, -14, ['7', '♣']) + card(72, 32, -4, ['7', '♥']) + card(88, 32, 6, ['10', '♠']) + card(104, 36, 16, ['A', '♦']);
 }
 
-const SCENES = { pans, blocks, towers, garlic, solitaire, hola };
+function loop() {
+  // A track loop with a cube riding it, and trucks of mixed cubes parked around it.
+  const path = 'M50 20 H110 V50 H86 V40 H50Z';
+  const cube = (x, y, c) => `<rect x="${x - 3.5}" y="${y - 3.5}" width="7" height="7" rx="1.8" fill="${c}"/>`;
+  const truck = (x, y, horiz, cs) => {
+    const w = horiz ? cs.length * 9 + 3 : 12, hh = horiz ? 12 : cs.length * 9 + 3;
+    return `<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="3" fill="var(--bg)" stroke="currentColor" stroke-width="1"/>` +
+      cs.map((c, k) => cube(horiz ? x + 6 + k * 9 : x + 6, horiz ? y + 6 : y + 6 + k * 9, c)).join('');
+  };
+  return `<path d="${path}" fill="none" stroke="var(--tile)" stroke-width="8" stroke-linejoin="round"/>
+    <path d="${path}" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="1" stroke-linejoin="round"/>
+    ${cube(80, 20, P.red)}${cube(110, 36, P.blue)}
+    ${truck(64, 0, true, [P.blue, P.yellow, P.red])}${truck(116, 26, true, [P.yellow, P.yellow])}
+    ${truck(32, 24, true, [P.red, P.blue].reverse())}${truck(60, 46, false, [P.yellow, P.red])}`;
+}
+
+const SCENES = { pans, blocks, mahjong, garlic, solitaire, hola, loop };
 
 export function preview(id) {
   return h('div', { class: 'hero', 'aria-hidden': 'true', html: `<svg viewBox="0 0 160 70" class="hero-art">${SCENES[id]()}</svg>` });

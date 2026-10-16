@@ -17,11 +17,11 @@ export const games = [
     load: () => import('../games/blocks/index.js'),
   },
   {
-    id: 'towers',
-    title: 'Kelsey VS Carter',
-    blurb: 'Take every tower',
-    statsKey: 'games.towers.stats',
-    load: () => import('../games/towers/index.js'),
+    id: 'mahjong',
+    title: 'Block Game',
+    blurb: 'Match the tiles, clear the board',
+    statsKey: 'games.mahjong.stats',
+    load: () => import('../games/mahjong/index.js'),
   },
   {
     id: 'garlic',
@@ -43,6 +43,13 @@ export const games = [
     blurb: 'Hola, with sevens wild',
     statsKey: 'games.hola.stats',
     load: () => import('../games/hola/index.js'),
+  },
+  {
+    id: 'loop',
+    title: 'Circle Track',
+    blurb: 'Sort the cubes before the track jams',
+    statsKey: 'games.loop.stats',
+    load: () => import('../games/loop/index.js'),
   },
 ];
 
