@@ -1,4 +1,4 @@
-import { h, header, fmtTime } from '../../js/ui.js';
+import { h, header, fmtTime, viewWidth } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
 import { autosave } from '../../js/autosave.js';
@@ -127,7 +127,7 @@ export function mountBoard(el, query) {
     // --- Layout ---
     let cw = 40, ch = 56;
     const size = () => {
-      const W = Math.min(window.innerWidth - 32, 528);
+      const W = Math.min(viewWidth() - 32, 528);
       cw = Math.floor((W - GAP * 6) / 7);
       ch = Math.round(cw * 1.42);
       table.style.width = `${W}px`;

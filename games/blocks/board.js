@@ -1,4 +1,4 @@
-import { h, header, fmtTime } from '../../js/ui.js';
+import { h, header, fmtTime, viewWidth } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
@@ -130,7 +130,7 @@ export function mountBoard(el, query) {
     frame.append(floor);
 
     const sizeBoard = () => {
-      const availW = Math.min(window.innerWidth - 32, 528) - 2 * PAD - 4;
+      const availW = Math.min(viewWidth() - 32, 528) - 2 * PAD - 4;
       const availH = window.innerHeight - 250 - 2 * PAD;
       frame.style.setProperty('--cell', `${Math.max(26, Math.floor(Math.min(availW / w, availH / H)))}px`);
     };

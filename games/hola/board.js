@@ -1,4 +1,4 @@
-import { h, header, fmtTime } from '../../js/ui.js';
+import { h, header, fmtTime, viewWidth } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
 import { autosave } from '../../js/autosave.js';
@@ -73,7 +73,7 @@ export function mountBoard(el, query) {
   const POS = g.players === 2 ? ['bottom', 'top'] : ['bottom', 'left', 'top', 'right'];
   let tw = 44, th = 62;
   const size = () => {
-    const W = Math.min(window.innerWidth - 32, 528);
+    const W = Math.min(viewWidth() - 32, 528);
     const cw = Math.min(76, Math.floor((W - 90) / 4.4));
     tw = Math.min(58, Math.round(W * 0.13));
     th = Math.round(tw * 1.42);

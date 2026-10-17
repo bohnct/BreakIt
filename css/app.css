@@ -36,6 +36,10 @@ html, body {
 }
 
 body { min-height: 100vh; min-height: 100dvh; }
+/* Nothing may stick out sideways: Android Chrome zooms the whole app out to fit anything wider
+   than the screen (iPhones don't), which makes every page look tiny. */
+html { overflow-x: hidden; }
+#app { max-width: min(560px, 100%); }
 
 #app {
   max-width: 560px;

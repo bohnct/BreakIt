@@ -1,4 +1,4 @@
-import { h, header, fmtTime, toast } from '../../js/ui.js';
+import { h, header, fmtTime, toast, viewWidth } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
@@ -108,18 +108,20 @@ export function mountBoard(el, query) {
     const PAD = 0.4;
     const spots = level.trucks.flatMap(t => [...Array(level.cap).keys()].map(k => cubeSpot(level.loop, t, k)));
     const all = [...level.loop, ...spots];
-    // Phones are tall, so a track that's wider than it is high is drawn turned on its side (x and
-    // y swapped), letting everything be drawn bigger.
+    // The track may be drawn turned on its side (x and y swapped), whichever way round lets it be
+    // drawn bigger in the space this screen actually has. (Android browsers leave less height than
+    // iPhones, so "always stand it up tall" made boards smaller there.)
     const rawW = Math.max(...all.map(p => p[0])) - Math.min(...all.map(p => p[0]));
     const rawH = Math.max(...all.map(p => p[1])) - Math.min(...all.map(p => p[1]));
-    const flip = rawW > rawH;
+    const room = () => [Math.min(viewWidth() - 32, 528), window.innerHeight - 250];
+    const fit = (w, h) => { const [aw, ah] = room(); return Math.min(aw / (w + PAD * 2), ah / (h + PAD * 2)); };
+    const flip = fit(rawH, rawW) > fit(rawW, rawH);
     const turn = ([x, y]) => (flip ? [y, x] : [x, y]);
     const xs = all.map(p => turn(p)[0]), ys = all.map(p => turn(p)[1]);
     const minX = Math.min(...xs), minY = Math.min(...ys), spanX = Math.max(...xs) - minX, spanY = Math.max(...ys) - minY;
     const size = () => {
-      const availW = Math.min(window.innerWidth - 32, 528);
-      const availH = window.innerHeight - 250;
-      unit = Math.floor(Math.min(availW / (spanX + PAD * 2), availH / (spanY + PAD * 2), 90));
+      const [availW, availH] = room();
+      unit = Math.max(12, Math.floor(Math.min(availW / (spanX + PAD * 2), availH / (spanY + PAD * 2), 90)));
       const W = unit * (spanX + PAD * 2), Hh = unit * (spanY + PAD * 2);
       const dpr = window.devicePixelRatio || 1;
       canvas.style.width = `${W}px`;

@@ -1,5 +1,10 @@
 // Tiny DOM helpers shared by every screen.
 
+// The page's real width. On Android, window.innerWidth can report more than the screen while the
+// page is zoomed out; sizing boards from that makes them wider still and the page zooms out
+// further, so take the smaller of the two.
+export const viewWidth = () => Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
+
 export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) {

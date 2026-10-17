@@ -1,4 +1,4 @@
-import { h, header, fmtTime, toast } from '../../js/ui.js';
+import { h, header, fmtTime, toast, viewWidth } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
@@ -83,7 +83,7 @@ export function mountBoard(el, query) {
   const cols = Math.max(...tiles.map(t => t.x)) + 1, rows = Math.max(...tiles.map(t => t.y)) + 1;
   let tw = 40, th = 52, dz = 4;
   const size = () => {
-    const W = Math.min(window.innerWidth - 32, 528);
+    const W = Math.min(viewWidth() - 32, 528);
     tw = Math.floor((W - PAD * 2) / cols);
     th = Math.min(Math.round(tw * 1.3), Math.floor((window.innerHeight - 260) / rows));
     tw = Math.min(tw, Math.round(th / 1.15));

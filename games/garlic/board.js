@@ -1,4 +1,4 @@
-import { h, header, fmtTime } from '../../js/ui.js';
+import { h, header, fmtTime, viewWidth } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
@@ -87,7 +87,7 @@ export function mountBoard(el, query) {
 
   let scale = 1;
   const size = () => {
-    const availW = Math.min(window.innerWidth - 32, 528);
+    const availW = Math.min(viewWidth() - 32, 528);
     const availH = window.innerHeight - 230;
     scale = Math.max(0.5, Math.min(availW / W, availH / H));
     const dpr = window.devicePixelRatio || 1;
