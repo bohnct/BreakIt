@@ -6,7 +6,7 @@ import * as playtimer from './playtimer.js';
 
 const STEPS = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180];
 
-export const APP_VERSION = '1.22.1';
+export const APP_VERSION = '1.22.5';
 
 export function renderSettings(el) {
   const s = playtimer.getSettings();

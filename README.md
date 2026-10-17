@@ -114,4 +114,4 @@ Then open http://localhost:8000.
 3. Add its files to `FILES` in `sw.js` so it works offline.
 4. Call `playtimer.start()` while the game is being played, so the play-time limit counts it.
 
-`tools/make-icons.ps1` regenerates the PNG icons.
+`tools/make-icons.ps1` regenerates the PNG icons from `icons/pan-source.png` (a black pan on white), inverting it to white on black.
