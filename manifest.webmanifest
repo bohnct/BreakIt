@@ -1,6 +1,7 @@
 {
-  "name": "Games",
-  "short_name": "Games",
+  "id": "./break-it",
+  "name": "Break It",
+  "short_name": "Break It",
   "description": "Minimal puzzle games.",
   "start_url": "./",
   "scope": "./",

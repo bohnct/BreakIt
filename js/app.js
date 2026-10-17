@@ -17,7 +17,7 @@ function parseHash() {
 
 function renderHome(el) {
   el.append(
-    header('Games'),
+    header('Break It'),
     // Two columns so every game fits on one phone screen; Settings fills the last spot.
     h('nav', { class: 'list menu-grid' },
       games.map(g => h('a', { class: 'tile', href: `#/game/${g.id}` },

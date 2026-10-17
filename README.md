@@ -1,8 +1,8 @@
-# Games
+# Break It
 
 A minimal black-and-white puzzle app, built as a PWA so it installs to a phone's home screen and works offline.
 
-## Games
+## The games
 
 **Carter, Stop Hiding My Stuff!**: a remake of Meowdoku where you hunt frying pans instead of cats.
 Place one pan in every row, every column and every colour region. Pans never touch, not even diagonally.

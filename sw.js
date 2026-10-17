@@ -1,6 +1,6 @@
 // Offline cache. Add new files to FILES; bump VERSION to drop old caches.
-const VERSION = 'v20';
-const CACHE = `games-${VERSION}`;
+const VERSION = 'v22';
+const CACHE = `breakit-${VERSION}`;
 const FILES = [
   './',
   'index.html',
@@ -67,7 +67,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k.startsWith('games-') && k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => (k.startsWith('games-') || k.startsWith('breakin-') || k.startsWith('breakit-')) && k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim()));
 });
 
