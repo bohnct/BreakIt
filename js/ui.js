@@ -1,9 +1,16 @@
 // Tiny DOM helpers shared by every screen.
 
-// The page's real width. On Android, window.innerWidth can report more than the screen while the
-// page is zoomed out; sizing boards from that makes them wider still and the page zooms out
-// further, so take the smaller of the two.
-export const viewWidth = () => Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
+// How much index.html has zoomed the page up to undo Android Chrome's "Desktop site" mode (1 when
+// it hasn't). Window sizes and pointer positions come in unzoomed pixels; divide by this to get
+// the page's own pixels.
+export const zoom = () => parseFloat(document.documentElement.style.zoom) || 1;
+
+// The page's real width and height, in the page's own pixels.
+export const viewWidth = () => {
+  const z = zoom();
+  return z > 1 ? window.innerWidth / z : Math.min(window.innerWidth, document.documentElement.clientWidth || window.innerWidth);
+};
+export const viewHeight = () => window.innerHeight / zoom();
 
 export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);

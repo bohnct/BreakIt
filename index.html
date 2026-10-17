@@ -15,6 +15,27 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="css/app.css">
   <script>
+    // Android Chrome's "Desktop site" mode lays pages out about 980px wide whatever the viewport
+    // tag says, which shrinks the whole app to a strip in the middle of the screen. Spot it (a
+    // touch screen whose page is far wider than the screen) and zoom the page back up to fit.
+    // --vw/--vh give the stylesheet the real screen size while zoomed.
+    (function () {
+      var d = document.documentElement;
+      function fit() {
+        var z = navigator.maxTouchPoints > 0 && screen.width > 0 && innerWidth > screen.width * 1.3 ? innerWidth / screen.width : 1;
+        d.style.zoom = z > 1 ? String(z) : '';
+        if (z > 1) {
+          d.dataset.zoomed = '1';
+          d.style.setProperty('--vw', innerWidth / z + 'px');
+          d.style.setProperty('--vh', innerHeight / z + 'px');
+        } else {
+          delete d.dataset.zoomed;
+          d.style.removeProperty('--vw');
+          d.style.removeProperty('--vh');
+        }
+      }
+      try { fit(); addEventListener('resize', fit); } catch (e) {}
+    })();
     try {
       if (JSON.parse(localStorage.getItem('app.settings') || '{}').theme === 'day') document.documentElement.dataset.theme = 'day';
     } catch (e) {}

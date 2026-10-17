@@ -1,4 +1,4 @@
-import { h, header, fmtTime, viewWidth } from '../../js/ui.js';
+import { h, header, fmtTime, viewWidth, viewHeight, zoom } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
@@ -131,7 +131,7 @@ export function mountBoard(el, query) {
 
     const sizeBoard = () => {
       const availW = Math.min(viewWidth() - 32, 528) - 2 * PAD - 4;
-      const availH = window.innerHeight - 250 - 2 * PAD;
+      const availH = viewHeight() - 250 - 2 * PAD;
       frame.style.setProperty('--cell', `${Math.max(26, Math.floor(Math.min(availW / w, availH / H)))}px`);
     };
     sizeBoard();
@@ -322,7 +322,7 @@ export function mountBoard(el, query) {
     floor.addEventListener('pointermove', e => {
       const d = drag;
       if (!d) return;
-      const cp = cellPx(), b = blocks[d.id];
+      const cp = cellPx() * zoom(), b = blocks[d.id];
       const tx = d.ox + Math.round((e.clientX - d.sx) / cp);
       const ty = d.oy + Math.round((e.clientY - d.sy) / cp);
       const fromX = b.x, fromY = b.y;

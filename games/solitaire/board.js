@@ -1,4 +1,4 @@
-import { h, header, fmtTime, viewWidth } from '../../js/ui.js';
+import { h, header, fmtTime, viewWidth, viewHeight, zoom } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
 import { autosave } from '../../js/autosave.js';
@@ -139,7 +139,7 @@ export function mountBoard(el, query) {
     const tabY = () => ch + GAP * 3;
 
     function columnOffsets(p) {
-      const maxH = Math.max(ch * 2, window.innerHeight - table.getBoundingClientRect().top - tabY() - 30);
+      const maxH = Math.max(ch * 2, viewHeight() - table.getBoundingClientRect().top / zoom() - tabY() - 30);
       let down = ch * 0.14, up = ch * 0.3;
       const need = p.reduce((a, c, i) => a + (i === p.length - 1 ? 0 : c < 0 ? down : up), 0) + ch;
       if (need > maxH) {
@@ -263,7 +263,7 @@ export function mountBoard(el, query) {
     // --- Input: tap or drag ---
     let drag = null;
     const pointIn = (e, x, y, w, hh) => {
-      const r = table.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+      const r = table.getBoundingClientRect(), z = zoom(), px = (e.clientX - r.left) / z, py = (e.clientY - r.top) / z;
       return px >= x && px <= x + w && py >= y && py <= y + hh;
     };
     table.addEventListener('pointerdown', e => {
@@ -284,7 +284,7 @@ export function mountBoard(el, query) {
     });
     table.addEventListener('pointermove', e => {
       if (!drag) return;
-      const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+      const dx = (e.clientX - drag.sx) / zoom(), dy = (e.clientY - drag.sy) / zoom();
       if (!drag.moved && Math.hypot(dx, dy) < 6) return;
       drag.moved = true;
       drag.group.forEach((c, i) => {
@@ -311,9 +311,9 @@ export function mountBoard(el, query) {
       for (let k = 0; k < 4; k++) {
         if (pointIn(e, colX(3 + k) - GAP, -GAP, cw + GAP * 2, ch + GAP * 2) && tryMove(d.loc, 'found')) return;
       }
-      const r = table.getBoundingClientRect();
-      const col = Math.max(0, Math.min(6, Math.floor((e.clientX - r.left + GAP / 2) / (cw + GAP))));
-      if (e.clientY - r.top > tabY() - GAP && tryMove(d.loc, col)) return;
+      const r = table.getBoundingClientRect(), z = zoom();
+      const col = Math.max(0, Math.min(6, Math.floor(((e.clientX - r.left) / z + GAP / 2) / (cw + GAP))));
+      if ((e.clientY - r.top) / z > tabY() - GAP && tryMove(d.loc, col)) return;
       render();
     };
     table.addEventListener('pointerup', endDrag);

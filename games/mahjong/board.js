@@ -1,4 +1,4 @@
-import { h, header, fmtTime, toast, viewWidth } from '../../js/ui.js';
+import { h, header, fmtTime, toast, viewWidth, viewHeight } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
@@ -85,7 +85,7 @@ export function mountBoard(el, query) {
   const size = () => {
     const W = Math.min(viewWidth() - 32, 528);
     tw = Math.floor((W - PAD * 2) / cols);
-    th = Math.min(Math.round(tw * 1.3), Math.floor((window.innerHeight - 260) / rows));
+    th = Math.min(Math.round(tw * 1.3), Math.floor((viewHeight() - 260) / rows));
     tw = Math.min(tw, Math.round(th / 1.15));
     dz = Math.max(3, Math.round(tw * 0.09));
     boardEl.style.width = `${cols * tw + PAD * 2}px`;

@@ -1,12 +1,12 @@
 import { games } from './games.js';
-import { h, header, toast, fmtTime, chips } from './ui.js';
+import { h, header, toast, fmtTime, chips, zoom } from './ui.js';
 import { applyTheme } from './theme.js';
 import { remove } from './storage.js';
 import * as playtimer from './playtimer.js';
 
 const STEPS = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180];
 
-export const APP_VERSION = '1.22.6';
+export const APP_VERSION = '1.23.0';
 
 export function renderSettings(el) {
   const s = playtimer.getSettings();
@@ -70,5 +70,8 @@ export function renderSettings(el) {
           remove(g.statsKey);
           toast('Stats reset');
         } }, 'Reset stats')))),
-    h('p', { class: 'muted center' }, `v${APP_VERSION}`));
+    h('p', { class: 'muted center' }, `v${APP_VERSION}`),
+    // Sizes as the browser reports them, for checking phone scaling problems from a screenshot.
+    h('p', { class: 'muted center', style: 'font-size:12px' },
+      `Screen ${screen.width} · page ${window.innerWidth} · zoom ×${Math.round(zoom() * 100) / 100} · ${Math.round(devicePixelRatio * 100) / 100} dpr`));
 }

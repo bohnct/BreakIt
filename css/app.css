@@ -36,6 +36,7 @@ html, body {
 }
 
 body { min-height: 100vh; min-height: 100dvh; }
+[data-zoomed] body { min-height: var(--vh); }
 /* Nothing may stick out sideways: Android Chrome zooms the whole app out to fit anything wider
    than the screen (iPhones don't), which makes every page look tiny. */
 html { overflow-x: hidden; }
@@ -184,7 +185,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .grid {
-  --size: min(calc(100vw - 2 * var(--gutter)), 528px, calc(100vh - 240px));
+  --size: min(calc(var(--vw, 100vw) - 2 * var(--gutter)), 528px, calc(var(--vh, 100vh) - 240px));
   width: var(--size);
   height: var(--size);
   min-width: 260px; min-height: 260px;
@@ -427,7 +428,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 #toast {
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom));
   transform: translate(-50%, 20px);
-  max-width: calc(100vw - 32px);
+  max-width: calc(var(--vw, 100vw) - 32px);
   padding: 12px 18px;
   background: var(--fg); color: var(--bg);
   border-radius: var(--radius);

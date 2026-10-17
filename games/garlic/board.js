@@ -1,4 +1,4 @@
-import { h, header, fmtTime, viewWidth } from '../../js/ui.js';
+import { h, header, fmtTime, viewWidth, viewHeight, zoom } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
@@ -88,7 +88,7 @@ export function mountBoard(el, query) {
   let scale = 1;
   const size = () => {
     const availW = Math.min(viewWidth() - 32, 528);
-    const availH = window.innerHeight - 230;
+    const availH = viewHeight() - 230;
     scale = Math.max(0.5, Math.min(availW / W, availH / H));
     const dpr = window.devicePixelRatio || 1;
     canvas.style.width = `${W * scale}px`;
@@ -284,7 +284,7 @@ export function mountBoard(el, query) {
   canvas.addEventListener('pointerdown', e => {
     if (state.phase !== 'fight' || paused) return;
     const r = canvas.getBoundingClientRect();
-    const x = (e.clientX - r.left) / scale, y = (e.clientY - r.top) / scale;
+    const x = (e.clientX - r.left) / scale / zoom(), y = (e.clientY - r.top) / scale / zoom();
     const hitE = state.enemies
       .filter(en => Math.abs(en.x - x) < en.size + 5 && Math.abs(en.y - y) < en.size + 5)
       .sort((a, b) => Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y))[0];

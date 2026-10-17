@@ -1,4 +1,4 @@
-import { h, header, fmtTime, toast, viewWidth } from '../../js/ui.js';
+import { h, header, fmtTime, toast, viewWidth, viewHeight, zoom } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import { SORT_COLOURS } from '../../js/colours.js';
 import * as playtimer from '../../js/playtimer.js';
@@ -113,7 +113,7 @@ export function mountBoard(el, query) {
     // iPhones, so "always stand it up tall" made boards smaller there.)
     const rawW = Math.max(...all.map(p => p[0])) - Math.min(...all.map(p => p[0]));
     const rawH = Math.max(...all.map(p => p[1])) - Math.min(...all.map(p => p[1]));
-    const room = () => [Math.min(viewWidth() - 32, 528), window.innerHeight - 250];
+    const room = () => [Math.min(viewWidth() - 32, 528), viewHeight() - 250];
     const fit = (w, h) => { const [aw, ah] = room(); return Math.min(aw / (w + PAD * 2), ah / (h + PAD * 2)); };
     const flip = fit(rawH, rawW) > fit(rawW, rawH);
     const turn = ([x, y]) => (flip ? [y, x] : [x, y]);
@@ -352,7 +352,7 @@ export function mountBoard(el, query) {
     // Tap a truck to send its top cube onto the track.
     canvas.addEventListener('click', e => {
       if (over) return;
-      const r = canvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+      const r = canvas.getBoundingClientRect(), x = (e.clientX - r.left) / zoom(), y = (e.clientY - r.top) / zoom();
       let best = -1, bestD = Infinity;
       s.trucks.forEach((t, i) => {
         if (t.gone) return;
