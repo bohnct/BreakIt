@@ -140,9 +140,9 @@ export function mountBoard(el, query) {
     const cellPx = () => parseFloat(frame.style.getPropertyValue('--cell'));
 
     const walls = new Set(level.walls);
+    // Floor tiles, and hatched walls (squares no block can move into).
     for (let i = 0; i < w * H; i++) {
-      if (walls.has(i)) continue;
-      floor.append(h('div', { class: 'bj-tile', style: `left:calc(var(--cell) * ${i % w});top:calc(var(--cell) * ${Math.floor(i / w)})` }));
+      floor.append(h('div', { class: walls.has(i) ? 'bj-tile bj-wall' : 'bj-tile', style: `left:calc(var(--cell) * ${i % w});top:calc(var(--cell) * ${Math.floor(i / w)})` }));
     }
     for (const d of level.doors) {
       const along = `calc(var(--cell) * ${d.at} + 4px)`, len = `calc(var(--cell) * ${d.len} - 8px)`;
@@ -182,11 +182,24 @@ export function mountBoard(el, query) {
         const open = [!has.has(`${cx},${cy - 1}`), !has.has(`${cx + 1},${cy}`), !has.has(`${cx},${cy + 1}`), !has.has(`${cx - 1},${cy}`)];
         const g = open.map(o => (o ? 3 : 0));
         const r = (a, c) => (open[a] && open[c] ? 'var(--r-block)' : '0');
+        // Inside corners (an L's bend): this cell is joined on both sides but the diagonal cell
+        // isn't in the block. Its neighbours stop 3px short there, so trim the same 3px square
+        // off this cell's corner or it pokes out as a little notch.
+        const inner = (dx, dy) => has.has(`${cx + dx},${cy}`) && has.has(`${cx},${cy + dy}`) && !has.has(`${cx + dx},${cy + dy}`);
+        const G = 3, e = `calc(100% - ${G}px)`;
+        const pts = [
+          ...(inner(-1, -1) ? [`0 ${G}px`, `${G}px ${G}px`, `${G}px 0`] : ['0 0']),
+          ...(inner(1, -1) ? [`${e} 0`, `${e} ${G}px`, `100% ${G}px`] : ['100% 0']),
+          ...(inner(1, 1) ? [`100% ${e}`, `${e} ${e}`, `${e} 100%`] : ['100% 100%']),
+          ...(inner(-1, 1) ? [`${G}px 100%`, `${G}px ${e}`, `0 ${e}`] : ['0 100%']),
+        ];
+        const clip = pts.length > 4 ? `polygon(${pts.join(', ')})` : '';
         const cell = h('div', {
           class: 'bj-cell',
           style: `left:calc(var(--cell) * ${cx} + ${g[3]}px);top:calc(var(--cell) * ${cy} + ${g[0]}px);` +
             `width:calc(var(--cell) - ${g[1] + g[3]}px);height:calc(var(--cell) - ${g[0] + g[2]}px);` +
-            `border-radius:${r(0, 3)} ${r(0, 1)} ${r(2, 1)} ${r(2, 3)}`,
+            `border-radius:${r(0, 3)} ${r(0, 1)} ${r(2, 1)} ${r(2, 3)}` +
+            (clip ? `;-webkit-clip-path:${clip};clip-path:${clip}` : ''),
         });
         cell.append(h('span', { class: 'bj-stud', html: b.axis ? ARROW[b.axis] : null }));
         if (k === 0) cell.append(h('span', { class: 'bj-ice' }));

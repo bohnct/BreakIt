@@ -259,6 +259,12 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .bj-floor { position: relative; }
 .bj-tile { position: absolute; width: var(--cell); height: var(--cell); padding: 2px; }
 .bj-tile::before { content: ""; display: block; width: 100%; height: 100%; border-radius: 24%; background: var(--tile); }
+/* Walls: squares no block can enter, hatched so they stand out clearly from the floor. */
+.bj-wall::before {
+  background: repeating-linear-gradient(45deg, var(--muted) 0 2px, transparent 2px 7px);
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+  opacity: .7;
+}
 .bj-door { position: absolute; border-radius: 4px; }
 .bj-blocks { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
 .bj-block {
@@ -276,14 +282,17 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   display: flex; align-items: center; justify-content: center;
   color: rgba(0, 0, 0, .6);
 }
+/* Studs are sized from the grid square, not the cell: cells next to a gap aren't square, and a
+   percentage size made their circles oval. */
 .bj-stud {
-  width: 44%; height: 44%; border-radius: 50%;
+  width: calc(var(--cell) * .42); height: calc(var(--cell) * .42); border-radius: 50%;
+  flex-shrink: 0;
   background: rgba(0, 0, 0, .12);
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, .25);
   display: flex; align-items: center; justify-content: center;
 }
 .bj-stud svg { width: 88%; height: 88%; }
-.bj-block.layered .bj-stud { width: 58%; height: 58%; background: var(--ci); box-shadow: 0 0 0 2px rgba(0, 0, 0, .3); }
+.bj-block.layered .bj-stud { width: calc(var(--cell) * .55); height: calc(var(--cell) * .55); background: var(--ci); box-shadow: 0 0 0 2px rgba(0, 0, 0, .3); }
 .bj-block.iced .bj-cell { background: linear-gradient(rgba(225, 240, 255, .72), rgba(225, 240, 255, .72)), var(--c); }
 .bj-block.iced .bj-stud { opacity: .25; }
 .bj-ice {
@@ -414,7 +423,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hola-me { display: flex; align-items: center; gap: 10px; justify-content: center; }
 .hola-mypile .hola-pile-stack, .hola-mypile .hola-pile-stack i { width: 26px; height: 37px; }
 .hola .sol-card.dim { filter: saturate(.25) brightness(.7); }
-.hola .sol-card.win-card { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
+/* The winning card on the table: a bright yellow border that stands out against red and blue
+   cards and against both themes. */
+.hola .sol-card.win-card { box-shadow: 0 0 0 2px var(--bg), 0 0 0 5px #ffd60a; z-index: 5; }
 .hola-msg { min-height: 22px; text-align: center; font-size: 15px; }
 .hola-actions { display: flex; gap: 10px; justify-content: center; min-height: 0; }
 .hola-actions:empty { display: none; }

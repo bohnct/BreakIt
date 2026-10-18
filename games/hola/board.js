@@ -1,9 +1,9 @@
-import { h, header, fmtTime, viewWidth } from '../../js/ui.js';
+import { h, header, fmtTime, viewWidth, zoom } from '../../js/ui.js';
 import { load, save, remove } from '../../js/storage.js';
 import * as playtimer from '../../js/playtimer.js';
 import { autosave } from '../../js/autosave.js';
 import {
-  DIFFICULTIES, NAMES, rank, suit, points, isWild, team,
+  DIFFICULTIES, NAMES, rank, suit, points, team,
   newGame, dealHand, legalPlays, canFight, play, fight, endTrick, aiPlay, aiFight,
 } from './engine.js';
 import { stats } from './stats.js';
@@ -13,6 +13,7 @@ const SAVE_KEY = 'games.hola.saved';
 const SUITS = ['♠', '♥', '♦', '♣'];
 const RANKS = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const AI_DELAY = 750, TRICK_PAUSE = 1400;
+const PLAY_MS = 340, COLLECT_MS = 520; // card animations: onto the table, and off to the winner
 const aRank = r => `${r === 1 || r === 8 ? 'an' : 'a'} ${RANKS[r]}`; // "an A", "an 8", "a J"
 export const TARGETS = [{ value: 150, label: 'Short · 150' }, { value: 300, label: 'Standard · 300' }, { value: 500, label: 'Long · 500' }];
 
@@ -34,7 +35,7 @@ export function optsFromQuery(query) {
 export const customHref = o => `${HOME}/play?mode=custom&n=${o.players}&t=${o.target}&d=${o.difficulty}`;
 
 const cardEl = (c, extra = '') => h('div', {
-  class: `sol-card s${suit(c)} ${extra}`,
+  class: `sol-card s${suit(c)} ${extra}`, 'data-c': c,
   html: `<span class="sol-corner">${RANKS[rank(c)]}<br>${SUITS[suit(c)]}︎</span><span class="sol-pip">${SUITS[suit(c)]}︎</span>`,
 });
 
@@ -49,6 +50,8 @@ export function mountBoard(el, query) {
   const sideName = side => (g.players === 2 ? names[side] : side === 0 ? 'You and Gedo' : 'Kelsey and Carter');
 
   let acc = saved ? saved.acc : 0, last = Date.now(), over = g.phase === 'over', timer = null;
+  // What the last drawing showed, for the card animations (see "Animations" below).
+  let shown = null, shownCount = 0, shownDone = null, drawn = false;
   const cleanups = [];
 
   const timerEl = h('span', { class: 'timer' }, fmtTime(acc / 1000));
@@ -88,8 +91,58 @@ export function mountBoard(el, query) {
   window.addEventListener('resize', size);
   cleanups.push(() => window.removeEventListener('resize', size));
 
+  // --- Animations ---
+  // render() rebuilds the table each time, so before it does, note where the cards are; after,
+  // slide new cards in from where they came from. A played card flies from your hand (or the
+  // player's seat) to the middle. A finished trick stays on the table until the next card is
+  // played, then its cards fly to the winner's pile.
+  const calm = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mid = r => [r.left + r.width / 2, r.top + r.height / 2];
+  const seatPart = (p, part) => (p === 0 ? myPileEl.querySelector(part) : fieldEl.querySelector(`.hola-seat.pos-${POS[p]} ${part}`));
+
+  function snapshot() {
+    const hand = new Map([...handEl.children].map(e => [+e.dataset.c, e.getBoundingClientRect()]));
+    const seats = new Map();
+    for (let p = 1; p < g.players; p++) {
+      const b = seatPart(p, '.hola-backs');
+      if (b) seats.set(p, b.getBoundingClientRect());
+    }
+    const center = [...fieldEl.querySelectorAll('.hola-center .sol-card')].map(e => [e, e.getBoundingClientRect()]);
+    return { hand, seats, center };
+  }
+
+  // A card from `from` (a screen rectangle) slides into its place on the table.
+  function flyIn(e, from) {
+    const to = e.getBoundingClientRect(), z = zoom();
+    const [fx, fy] = mid(from), [tx, ty] = mid(to);
+    const s = Math.max(0.3, Math.min(1.6, from.width / to.width));
+    e.animate([
+      { transform: `translate(-50%, -50%) translate(${(fx - tx) / z}px, ${(fy - ty) / z}px) scale(${s})`, opacity: 0.6 },
+      { transform: 'translate(-50%, -50%)', opacity: 1 },
+    ], { duration: PLAY_MS, easing: 'cubic-bezier(.2, .7, .3, 1)' });
+  }
+
+  // The cards of a finished trick slide off to the winner's pile, shrinking, then disappear.
+  function collect(cards, winner, center) {
+    const pile = seatPart(winner, '.hola-pile-stack');
+    if (!pile) return;
+    const [px, py] = mid(pile.getBoundingClientRect()), z = zoom();
+    cards.forEach(([e, r], k) => {
+      e.classList.remove('win-card');
+      center.append(e); // keeps its old spot: the middle of the table doesn't move between renders
+      const [ex, ey] = mid(r);
+      const a = e.animate([
+        { transform: 'translate(-50%, -50%)', opacity: 1 },
+        { transform: `translate(-50%, -50%) translate(${(px - ex) / z}px, ${(py - ey) / z}px) scale(.35)`, opacity: 0.2 },
+      ], { duration: COLLECT_MS, delay: k * 40, easing: 'cubic-bezier(.5, 0, .7, 1)', fill: 'forwards' });
+      a.onfinish = () => e.remove();
+    });
+  }
+
   // --- Drawing ---
   function render() {
+    const before = drawn && !calm() && typeof Element.prototype.animate === 'function' ? snapshot() : null;
+    const prevShown = shown, prevCount = shownCount, prevDone = shownDone;
     scoreEl.replaceChildren(
       h('span', { class: 'hola-side us' }, `${g.players === 2 ? 'You' : 'You and Gedo'} ${g.scores[0]}`),
       h('span', { class: 'muted' }, `to ${g.target}`),
@@ -113,7 +166,8 @@ export function mountBoard(el, query) {
     const lastWinPlay = t ? [...t.plays].reverse().find(y => y.p === t.winner) : null;
     const plays = t ? t.plays.map(x => {
       const [dx, dy] = OFF[POS[x.p]];
-      const e = cardEl(x.c, (x === lastWinPlay ? 'win-card' : '') + (rank(x.c) === t.rank || isWild(x.c) ? '' : ' dim'));
+      // Every card keeps its colour; the one currently winning gets a bold border.
+      const e = cardEl(x.c, x === lastWinPlay ? 'win-card' : '');
       e.style.left = `calc(50% + ${dx + x.round * 7}px)`;
       e.style.top = `calc(50% + ${dy + x.round * 4}px)`;
       return e;
@@ -160,6 +214,24 @@ export function mountBoard(el, query) {
       }
       return e;
     }));
+
+    // Animate what changed since the last drawing.
+    if (before) {
+      const center = fieldEl.querySelector('.hola-center');
+      if (prevDone && t !== prevDone && before.center.length) collect(before.center, prevDone.winner, center);
+      if (t) {
+        const seen = t === prevShown ? prevCount : 0;
+        t.plays.forEach((x, i) => {
+          if (i < seen) return;
+          const from = x.p === 0 ? before.hand.get(x.c) : before.seats.get(x.p);
+          if (from) flyIn(plays[i], from);
+        });
+      }
+    }
+    shown = t;
+    shownCount = t ? t.plays.length : 0;
+    shownDone = g.trick ? null : g.lastTrick;
+    drawn = true;
   }
 
   // --- Turn flow: computer players act after a short pause so you can follow along ---
