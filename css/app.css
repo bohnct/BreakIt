@@ -245,7 +245,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .win-time { font-size: 44px; font-weight: 600; font-variant-numeric: tabular-nums; margin: 4px 0 8px; }
 .row-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
 
-/* Block game */
+/* Kelsey Blocked Me In Again! (car park) */
 .bj-frame {
   --r-block: calc(var(--cell) * .24);
   position: relative;
@@ -259,53 +259,38 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .bj-floor { position: relative; }
 .bj-tile { position: absolute; width: var(--cell); height: var(--cell); padding: 2px; }
 .bj-tile::before { content: ""; display: block; width: 100%; height: 100%; border-radius: 24%; background: var(--tile); }
-/* Walls: squares no block can enter, hatched so they stand out clearly from the floor. */
-.bj-wall::before {
-  background: repeating-linear-gradient(45deg, var(--muted) 0 2px, transparent 2px 7px);
-  box-shadow: inset 0 0 0 1.5px var(--muted);
-  opacity: .7;
+/* The way out: a gap in the right wall, level with your car, with a faint arrow. */
+.cp-exit { position: absolute; right: -2px; width: 4px; height: var(--cell); background: var(--bg); }
+.cp-exit::after {
+  content: ""; position: absolute; left: 7px; top: 50%; width: 8px; height: 8px; margin-top: -4px;
+  border: solid var(--muted); border-width: 2px 2px 0 0; transform: rotate(45deg);
 }
-.bj-door { position: absolute; border-radius: 4px; }
-.bj-blocks { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
-.bj-block {
-  position: absolute; left: 0; top: 0; width: 0; height: 0;
-  transition: transform .07s linear;
-  cursor: grab;
-  z-index: 1;
+.cp-veh {
+  position: absolute; left: 0; top: 0;
+  margin: 3px; border-radius: calc(var(--cell) * .22);
+  transition: transform .12s ease-out;
+  cursor: grab; touch-action: none;
 }
-.bj-block.lift { z-index: 2; cursor: grabbing; }
-.bj-block.lift .bj-cell { filter: brightness(1.08); }
-.bj-block.leaving { transition: transform .25s ease-in, opacity .25s ease-in; opacity: 0; pointer-events: none; }
-.bj-cell {
-  position: absolute;
-  background: var(--c);
-  display: flex; align-items: center; justify-content: center;
-  color: rgba(0, 0, 0, .6);
-}
-/* Studs are sized from the grid square, not the cell: cells next to a gap aren't square, and a
-   percentage size made their circles oval. */
-.bj-stud {
-  width: calc(var(--cell) * .42); height: calc(var(--cell) * .42); border-radius: 50%;
-  flex-shrink: 0;
-  background: rgba(0, 0, 0, .12);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .25);
-  display: flex; align-items: center; justify-content: center;
-}
-.bj-stud svg { width: 88%; height: 88%; }
-.bj-block.layered .bj-stud { width: calc(var(--cell) * .55); height: calc(var(--cell) * .55); background: var(--ci); box-shadow: 0 0 0 2px rgba(0, 0, 0, .3); }
-.bj-block.iced .bj-cell { background: linear-gradient(rgba(225, 240, 255, .72), rgba(225, 240, 255, .72)), var(--c); }
-.bj-block.iced .bj-stud { opacity: .25; }
-.bj-ice {
-  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: calc(var(--cell) * .45); color: #0b2a44;
-  pointer-events: none;
-}
-.bj-block.peel .bj-cell { animation: peel .3s ease-out; }
-.bj-block.shake .bj-cell { animation: shake .3s; }
-.bj-frame.done .bj-block { pointer-events: none; }
-@keyframes peel { 40% { transform: scale(1.12); } }
-@keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.cp-veh.h { width: calc(var(--cell) * var(--len) - 6px); height: calc(var(--cell) - 6px); }
+.cp-veh.v { width: calc(var(--cell) - 6px); height: calc(var(--cell) * var(--len) - 6px); }
+.cp-frame:not(.ready) .cp-veh { transition: none; } /* no sliding in from the corner on load */
+.cp-veh.lift { transition: none; z-index: 2; cursor: grabbing; filter: brightness(1.08); }
+.cp-veh.leaving { transition: transform .45s ease-in, opacity .45s ease-in; opacity: 0; }
+/* Your car: a ring in the text colour and two white racing stripes, so it can't be missed. */
+.cp-veh.yours { z-index: 1; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--fg); }
+.cp-veh.yours.h { background-image: linear-gradient(transparent 38%, rgba(255, 255, 255, .9) 38% 45%, transparent 45% 55%, rgba(255, 255, 255, .9) 55% 62%, transparent 62%); }
+.cp-veh.yours.v { background-image: linear-gradient(90deg, transparent 38%, rgba(255, 255, 255, .9) 38% 45%, transparent 45% 55%, rgba(255, 255, 255, .9) 55% 62%, transparent 62%); }
+/* Windows and cargo, placed along the length from the front (right or bottom end). */
+.cp-veh span { position: absolute; border-radius: calc(var(--cell) * .08); }
+.cp-veh.h span { top: 18%; bottom: 18%; right: calc(var(--at) * 100%); width: calc(var(--l) * 100%); }
+.cp-veh.v span { left: 18%; right: 18%; bottom: calc(var(--at) * 100%); height: calc(var(--l) * 100%); }
+.cp-glass { background: rgba(0, 0, 0, .38); }
+.cp-pane { background: rgba(0, 0, 0, .28); }
+.cp-cargo { background: rgba(255, 255, 255, .22); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .15); }
+.cp-veh.h .cp-cargo { top: 8%; bottom: 8%; }
+.cp-veh.v .cp-cargo { left: 8%; right: 8%; }
+.cp-frame.done .cp-veh { pointer-events: none; }
+.cp-count { font-size: 17px; font-variant-numeric: tabular-nums; margin-bottom: -10px; }
 
 /* Cleaning Up */
 .lp-canvas { display: block; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
@@ -436,6 +421,53 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hola-hand .sol-card:not(.playable) { cursor: default; }
 
 /* Toast */
+/* Balance Priorities. --c is one block square, --w the scale's width (set from board.js). */
+.bp-stage { user-select: none; -webkit-user-select: none; }
+.bp-totals { display: flex; align-items: baseline; gap: 14px; margin-bottom: -6px; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.bp-totals span { min-width: 2ch; }
+.bp-totals span:first-child { text-align: right; }
+.bp-vs { font-style: normal; color: var(--muted); }
+.bp-scale { position: relative; width: var(--w); height: calc(var(--c) * 4 + 96px); }
+.bp-arm {
+  position: absolute; left: 0; right: 0; top: 34px; height: calc(var(--c) * 4 + 20px);
+  transform-origin: 50% calc(100% - 3px);
+  transition: transform .5s cubic-bezier(.3, 1.4, .5, 1);
+}
+.bp-beam { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; border-radius: 3px; background: var(--fg); }
+.bp-spot {
+  position: absolute; bottom: 6px; height: calc(var(--c) * 4 + 14px);
+  display: flex; align-items: flex-end; justify-content: center; padding-bottom: 3px;
+  cursor: pointer;
+}
+.bp-spot.open::before {
+  content: ""; position: absolute; left: 22%; right: 22%; bottom: 0; height: 3px; border-radius: 2px;
+  background: var(--muted); opacity: .45;
+}
+.picking .bp-spot.open::after {
+  content: ""; position: absolute; top: 0; left: 3px; right: 3px; bottom: 0;
+  border: 1px dashed var(--muted); border-radius: 8px;
+}
+.bp-dots { position: absolute; left: 0; right: 0; bottom: -16px; display: flex; justify-content: center; gap: 4px; }
+.bp-dots i { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+.bp-pivot {
+  position: absolute; left: 50%; top: calc(var(--c) * 4 + 54px);
+  width: 0; height: 0; transform: translateX(-50%);
+  border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 24px solid var(--fg);
+}
+.bp-tray {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 14px 20px;
+  width: var(--w); padding: 16px; border: 1px solid var(--line); border-radius: var(--radius);
+}
+.bp-slot { display: flex; justify-content: center; align-items: flex-end; min-width: calc(var(--c) * 2 + 2px); height: calc(var(--c) * 4 + 6px); }
+.bp-block {
+  display: grid; gap: 2px; cursor: pointer;
+  grid-template-columns: repeat(var(--cols), var(--c));
+  grid-template-rows: repeat(var(--rows), var(--c));
+  transition: transform .15s;
+}
+.bp-cell { border-radius: calc(var(--c) * .26); }
+.bp-block.selected { transform: translateY(-6px); filter: drop-shadow(0 0 1.5px var(--fg)) drop-shadow(0 0 1.5px var(--fg)); }
+
 #toast {
   position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom));
   transform: translate(-50%, 20px);

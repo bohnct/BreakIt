@@ -20,15 +20,31 @@ function pans() {
 }
 
 function blocks() {
-  return `<rect x="34" y="6" width="92" height="56" rx="9" fill="none" stroke="currentColor" stroke-width="1.2"/>
-    <rect x="62" y="2.5" width="22" height="3" rx="1.5" fill="${P.red}"/>
-    <rect x="126.5" y="22" width="3" height="18" rx="1.5" fill="${P.green}"/>
-    <rect x="44" y="65" width="16" height="3" rx="1.5" fill="${P.blue}"/>
-    <rect x="42" y="14" width="26" height="12" rx="4" fill="${P.red}"/>
-    <rect x="44" y="32" width="12" height="22" rx="4" fill="${P.blue}"/>
-    <rect x="74" y="16" width="12" height="24" rx="4" fill="${P.yellow}"/>
-    <rect x="92" y="22" width="24" height="12" rx="4" fill="${P.green}"/>
-    <rect x="94" y="40" width="12" height="12" rx="4" fill="${P.red}"/>`;
+  // A jammed car park: your red car on the exit row, a truck and cars in its way.
+  // Each vehicle gets a dark windscreen at its front end, like the game's.
+  const veh = (x, y, w, hh, c) => {
+    const horiz = w > hh, glass = horiz
+      ? `<rect x="${x + w - 5.2}" y="${y + 2.6}" width="2" height="${hh - 5.2}" rx=".6" fill="#000" fill-opacity=".38"/>`
+      : `<rect x="${x + 2.6}" y="${y + hh - 5.2}" width="${w - 5.2}" height="2" rx=".6" fill="#000" fill-opacity=".38"/>`;
+    return `<rect x="${x + 0.8}" y="${y + 0.8}" width="${w - 1.6}" height="${hh - 1.6}" rx="2.4" fill="${c}"/>${glass}`;
+  };
+  const u = 10, x0 = 50, y0 = 4, r = x0 + 6 * u + 2;
+  // Walls all round, with a gap on the right level with the red car.
+  return `<path d="M${r} ${y0 + 2 * u} V${y0 - 2} H${x0 - 2} V${y0 + 6 * u + 2} H${r} V${y0 + 3 * u}" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M${r + 4} ${y0 + 2 * u + 3} l3 2 -3 2" fill="none" stroke="currentColor" stroke-opacity=".5" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+    ${veh(x0, y0 + 2 * u, 2 * u, u, P.red)}
+    <rect x="${x0 + 0.8}" y="${y0 + 2 * u + 0.8}" width="${2 * u - 1.6}" height="${u - 1.6}" rx="2.4" fill="none" stroke="currentColor" stroke-width="1"/>
+    <path d="M${x0 + 3} ${y0 + 2 * u + 4.2} H${x0 + 13} M${x0 + 3} ${y0 + 2 * u + 5.8} H${x0 + 13}" stroke="#fff" stroke-width=".9"/>
+    ${veh(x0 + 3 * u, y0 + u, u, 3 * u, P.blue)}
+    ${veh(x0 + 5 * u, y0 + u, u, 2 * u, P.yellow)}
+    ${veh(x0 + 2 * u, y0, 3 * u, u, P.green)}
+    ${veh(x0, y0 + 3 * u, u, 2 * u, P.teal)}
+    ${veh(x0 + 1 * u, y0 + 4 * u, 3 * u, u, P.amber)}
+    ${veh(x0 + 4 * u, y0 + 3 * u, u, 3 * u, P.yellow)}
+    ${veh(x0 + 2 * u, y0 + u, u, 2 * u, P.green)}
+    ${veh(x0, y0 + u, 2 * u, u, P.blue)}
+    ${veh(x0, y0 + 5 * u, 2 * u, u, P.green)}
+    ${veh(x0 + 5 * u, y0 + 4 * u, u, 2 * u, P.blue)}`;
 }
 
 function mahjong() {
@@ -89,7 +105,20 @@ function loop() {
     ${truck(32, 24, true, [P.red, P.blue].reverse())}${truck(60, 46, false, [P.yellow, P.red])}`;
 }
 
-const SCENES = { pans, blocks, mahjong, garlic, solitaire, hola, loop };
+function balance() {
+  // A scale tipped toward its heavier side, with a block waiting beside it.
+  const sq = (x, y, c) => `<rect x="${x}" y="${y}" width="8" height="8" rx="2" fill="${c}"/>`;
+  return `<polygon points="80,46 73,58 87,58" fill="currentColor"/>
+    <g transform="rotate(-6 80 45)">
+      <rect x="38" y="43" width="84" height="3.5" rx="1.75" fill="currentColor"/>
+      ${sq(41, 25, P.red)}${sq(41, 34, P.red)}${sq(50, 34, P.red)}
+      ${sq(66, 34, P.yellow)}
+      ${sq(103, 25, P.teal)}${sq(103, 34, P.teal)}
+    </g>
+    ${sq(130, 42, P.blue)}${sq(130, 51, P.blue)}${sq(139, 51, P.blue)}${sq(139, 42, P.blue)}`;
+}
+
+const SCENES = { pans, blocks, mahjong, garlic, solitaire, hola, loop, balance };
 
 export function preview(id) {
   return h('div', { class: 'hero', 'aria-hidden': 'true', html: `<svg viewBox="0 0 160 70" class="hero-art">${SCENES[id]()}</svg>` });

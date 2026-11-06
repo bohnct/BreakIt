@@ -1,5 +1,5 @@
 // Offline cache. Add new files to FILES; bump VERSION to drop old caches.
-const VERSION = 'v31';
+const VERSION = 'v36';
 const CACHE = `breakit-${VERSION}`;
 const FILES = [
   './',
@@ -50,6 +50,10 @@ const FILES = [
   'games/pans/solver.js',
   'games/pans/stats.js',
   'games/pans/worker.js',
+  'games/balance/index.js',
+  'games/balance/board.js',
+  'games/balance/engine.js',
+  'games/balance/stats.js',
   'icons/favicon.png',
   'icons/icon-192.png',
   'icons/icon-512.png',

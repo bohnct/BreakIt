@@ -1,14 +1,17 @@
-import { h, header, fmtTime, chips, toggleChips, statTile, breakdown } from '../../js/ui.js';
+import { h, header, fmtTime, chips, statTile, breakdown } from '../../js/ui.js';
 import { preview } from '../../js/previews.js';
-import { load, save } from '../../js/storage.js';
+import { load, save, remove } from '../../js/storage.js';
 import { summarize } from '../../js/stats.js';
-import { maxBlocks, DIFFICULTIES } from './engine.js';
+import { DIFFICULTIES } from './engine.js';
 import { stats } from './stats.js';
-import { mountBoard, getSavedGame, customHref, cap, SIZES, OBSTACLES } from './board.js';
+import { mountBoard, getSavedGame, customHref, cap, SIZES } from './board.js';
 
 export const TITLE = 'Kelsey Blocked Me In Again!';
 const HOME = '#/game/blocks';
-const CUSTOM_KEY = 'games.blocks.custom';
+const CUSTOM_KEY = 'games.blocks.cars.custom';
+
+// The old sliding-block game's stats, saved game and settings don't fit the car game.
+['games.blocks.stats', 'games.blocks.saved', 'games.blocks.custom'].forEach(remove);
 
 export function mount(el, parts, query) {
   switch (parts[0]) {
@@ -27,79 +30,33 @@ function renderLanding(el) {
     h('nav', { class: 'list' },
       saved && h('a', { class: 'btn big continue', href: `${HOME}/play?resume=1&k=${Date.now()}` },
         h('span', {}, 'Continue'),
-        h('span', { class: 'continue-sub' }, `${saved.level.w}×${saved.level.h} · ${cap(saved.level.difficulty)} · ${fmtTime(saved.acc / 1000)}`)),
+        h('span', { class: 'continue-sub' }, `${saved.level.n}×${saved.level.n} · ${cap(saved.level.difficulty)} · ${saved.moves} moves · ${fmtTime(saved.acc / 1000)}`)),
       h('a', { class: 'btn big', href: `${HOME}/play?mode=random` }, 'Random level'),
       h('a', { class: 'btn big', href: `${HOME}/custom` }, 'Custom level'),
       h('a', { class: 'btn big ghost', href: `${HOME}/stats` }, 'Stats')),
     h('details', { class: 'card how' },
       h('summary', {}, 'How to play'),
-      h('p', {}, 'Kelsey has boxed you in. Drag each block to the door of the same colour on the edge of the board and it slides out.'),
-      h('p', {}, 'Blocks can\'t pass through each other, and a block only fits through a door that is at least as wide as the block.'),
-      h('p', {}, 'On Medium and Hard levels the blocks are jammed: you\'ll need to shuffle some out of the way before others can get out.'),
-      h('p', {}, 'Arrow blocks only slide the way their arrows point. Iced blocks are stuck until the number of other blocks shown has left. Layered blocks lose their outer colour at a matching door, then need a door for the colour inside.')));
+      h('p', {}, 'Kelsey has boxed your red car in. Get it out through the gap in the right-hand wall.'),
+      h('p', {}, 'Drag cars, trucks and buses to move them. Each one only drives forwards and backwards along its length, never sideways, and nothing can pass through anything else.'),
+      h('p', {}, 'One move is one vehicle driving any distance. When you get out, you\'ll see how close you came to the fewest moves possible.')));
 }
 
 function renderCustom(el) {
-  const saved = load(CUSTOM_KEY, {});
-  const cfg = { size: '6x8', blocks: 10, colours: 4, difficulty: 'medium', obstacles: [], ...saved };
-  const obstacles = new Set(cfg.obstacles);
-  const dims = () => cfg.size.split('x').map(Number);
-
-  const blocksVal = h('span', { class: 'value' });
-  const showBlocks = () => {
-    const max = maxBlocks(...dims());
-    cfg.blocks = Math.min(Math.max(3, cfg.blocks), max);
-    blocksVal.textContent = `${cfg.blocks} / ${max}`;
-  };
-  showBlocks();
-  const stepBlocks = d => { cfg.blocks += d; showBlocks(); };
-
-  // Picking a difficulty suggests a matching board (still changeable): Hard means big and packed.
-  const SUGGEST = { easy: ['6x6', 0.7], medium: ['7x9', 0.9], hard: ['8x10', 1] };
-  const sizeWrap = h('div');
-  const drawSizes = () => sizeWrap.replaceChildren(
-    chips(SIZES.map(([w, hh]) => ({ value: `${w}x${hh}`, label: `${w}×${hh}` })), cfg.size, 'Board size',
-      v => { cfg.size = v; showBlocks(); }));
-  drawSizes();
-
+  const cfg = { n: 6, difficulty: 'medium', ...load(CUSTOM_KEY, {}) };
   el.append(
     header('Custom level', HOME),
     h('section', { class: 'card' },
       h('h2', {}, 'Difficulty'),
-      chips(DIFFICULTIES.map(d => ({ value: d, label: cap(d) })), cfg.difficulty, 'Difficulty', v => {
-        cfg.difficulty = v;
-        const [size, share] = SUGGEST[v];
-        cfg.size = size;
-        cfg.blocks = Math.round(maxBlocks(...dims()) * share);
-        drawSizes();
-        showBlocks();
-      }),
-      h('p', { class: 'muted' }, 'Easy: every block can go straight out. Medium: one or two blocks must be moved out of the way first. Hard: a big board packed tight, where you\'ll often find no single move helps and you have to plan several moves ahead (usually 10 to 20 moves aside in all).')),
+      chips(DIFFICULTIES.map(d => ({ value: d, label: cap(d) })), cfg.difficulty, 'Difficulty', v => { cfg.difficulty = v; }),
+      h('p', { class: 'muted' }, 'Easy: 4 to 8 moves. Medium: 10 to 16 moves. Hard: the longest the generator can find in a few seconds, usually 20 or more moves.')),
     h('section', { class: 'card' },
-      h('h2', {}, 'Board size'),
-      sizeWrap),
-    h('section', { class: 'card' },
-      h('h2', {}, 'Blocks'),
-      h('div', { class: 'row' },
-        h('span', {}, 'Number of blocks'),
-        h('div', { class: 'stepper' },
-          h('button', { class: 'btn small', 'aria-label': 'Fewer blocks', onclick: () => stepBlocks(-1) }, '−'),
-          blocksVal,
-          h('button', { class: 'btn small', 'aria-label': 'More blocks', onclick: () => stepBlocks(1) }, '+')))),
-    h('section', { class: 'card' },
-      h('h2', {}, 'Colours'),
-      chips([2, 3, 4, 5, 6].map(c => ({ value: c, label: String(c) })), cfg.colours, 'Colours', v => { cfg.colours = v; })),
-    h('section', { class: 'card' },
-      h('h2', {}, 'Obstacles'),
-      toggleChips(OBSTACLES, obstacles, 'Obstacles')),
+      h('h2', {}, 'Car park size'),
+      chips(SIZES.map(s => ({ value: s, label: `${s}×${s}` })), cfg.n, 'Car park size', v => { cfg.n = v; }),
+      h('p', { class: 'muted' }, 'Bigger car parks have buses (4 long) as well as cars and trucks. 8×8 takes a few seconds longer to set up.')),
     h('div', { class: 'foot' },
       h('button', { class: 'btn big', onclick: () => {
-        cfg.obstacles = [...obstacles];
         save(CUSTOM_KEY, cfg);
-        const [w, hh] = dims();
-        const o = { w, h: hh, blocks: cfg.blocks, colours: cfg.colours, difficulty: cfg.difficulty };
-        for (const x of OBSTACLES) o[x.value] = obstacles.has(x.value);
-        location.hash = customHref(o);
+        location.hash = customHref(cfg);
       } }, 'Start')));
 }
 
@@ -111,14 +68,12 @@ function renderStats(el) {
     h('div', { class: 'stats' },
       statTile('Levels played', st.completed),
       statTile('Started', st.started),
-      statTile('Total time', fmtTime(st.results.reduce((a, r) => a + r.s, 0))),
+      statTile('Fewest moves', st.results.filter(r => r.mv === r.best).length),
       statTile('Average', fmtTime(all.avg)),
       statTile('Fastest', fmtTime(all.min)),
       statTile('Slowest', fmtTime(all.max))),
-    breakdown('By board size', SIZES.map(([w, hh]) => ({
-      label: `${w}×${hh}`, sum: summarize(st.results.filter(r => r.w === w && r.h === hh)),
-    }))),
     breakdown('By difficulty', DIFFICULTIES.map(d => ({ label: cap(d), sum: summarize(st.results.filter(r => r.d === d)) }))),
+    breakdown('By size', SIZES.map(s => ({ label: `${s}×${s}`, sum: summarize(st.results.filter(r => r.n === s)) }))),
     st.completed ? null : h('p', { class: 'muted center' }, 'Finish a level to see your times here.'),
   ].filter(Boolean));
 }

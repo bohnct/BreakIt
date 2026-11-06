@@ -13,20 +13,14 @@ Tap a square once for ✕, twice for a pan. Drag to mark ✕ on many squares.
 - **Stats:** levels played, plus average, fastest and slowest times, overall and by size and difficulty.
 - **Puzzles:** generated on the device, always with exactly one solution, and graded by the deductions they need.
 
-**Kelsey Blocked Me In Again!**: a remake of Color Block Jam.
-Drag coloured blocks around a walled board to the door of their colour. A block leaves when it touches a matching door that is at least as wide as the block.
+**Kelsey Blocked Me In Again!**: a car park jam puzzle (rebuilt on 2026-11-05; it used to be a sliding colour-block game).
+Kelsey has boxed your red car in. Drag cars (2 squares long), trucks (3) and buses (4, on bigger car parks) to clear a path, then drive your car out through the gap in the right-hand wall. Vehicles only drive along their length, never sideways. One move is one vehicle driving any distance; a count at the top shows your moves, and the win card shows how close you came to the fewest possible. Undo and Restart sit at the top.
 
-- **Obstacles (optional):**
-  - **Arrow blocks** only slide one way.
-  - **Iced blocks** wait until a number of other blocks have left.
-  - **Layered blocks** peel to an inner colour at their first door.
-  - **Walls** are fixed squares on the board.
-- **Random level:** Medium (6×8 to 7×9 boards, mostly full) or Hard (8×8 to 9×11 boards, packed full), with random colours and obstacles.
-- **Custom level:** pick the difficulty, board size (5×5 up to 9×11), number of blocks, colours and obstacles. Picking a difficulty suggests a matching board.
-- **Levels:** every level is generated on the device and proven solvable.
-  - **Easy:** blocks can go straight out.
-  - **Medium:** you must move blocks out of the way once or twice. Medium levels are built by playing a solution backwards from an empty board.
-  - **Hard:** a board packed about 80% full. A planning solver proves it can be finished and measures how far ahead you must think. Hard keeps the board with the most "knots": points where no single move frees anything, so you have to plan two to four moves ahead. Hard levels typically have three to six knots and need 10 to 20 moves aside. Obstacles are added afterwards and kept only if the level is still solvable.
+- **Levels:** generated on the device. Vehicles are scattered over 76–86% of the car park, then a solver walks every arrangement they can reach and works out each one's fewest moves. The level starts from an arrangement with the wanted number of moves, so every level is solvable and its difficulty is measured exactly. Crowded car parks were tested to give far harder levels than sparse ones.
+  - **Easy:** 4–8 moves. **Medium:** 10–16 moves. **Hard:** the furthest arrangement found in about 2.5 seconds, usually 20 or more moves.
+- **Random level:** Medium (mostly 6×6, sometimes 7×7) or Hard (mostly 6×6, often 7×7, now and then 8×8).
+- **Custom level:** pick the difficulty and the size (6×6, 7×7 or 8×8).
+- **Stats:** new for the car game (the old block game's stats were cleared), including how many levels you finished in the fewest moves.
 
 **Folding Laundry**: mahjong solitaire (tile matching). Tiles show clothing (T-shirts, socks, underwear, trousers, dresses and caps) in six colours; a pair is the same item in the same colour.
 Match pairs of identical free tiles to clear the board. A tile is free when nothing sits on top of it and its left or right side is open; blocked tiles look darker.
@@ -72,6 +66,13 @@ Trucks are parked around a closed track, each holding a mix of coloured cubes. T
   - **Roof colours:** a truck with a coloured roof only takes that colour. They turn up occasionally, about half of random Hard levels.
   - **Ice:** iced trucks are stuck until enough trucks have been sorted.
   - **Hidden:** hidden trucks only show their top cube; once a cube has been seen it stays visible.
+
+**Balance Priorities**: balance a scale.
+A handful of blocks, shaped like Tetris pieces, sit in a tray. Put every one of them on the scale so it balances. Each side has three spots, at distances 1, 2 and 3 from the pivot (shown by dots under the beam), and each spot holds one block. A block weighs its number of squares. The beam tips a fixed amount toward the heavier side and sits level when balanced, so it tells you which way you're off. At the top, two numbers (left : right) add up each side's weight × distance. The tray of unplaced blocks sits above the scale. Tap a block, then a spot; tap a placed block to move or swap it, or tap the tray to send it back. Undo and Restart sit at the top.
+
+- **Levels:** every level is generated on the device and has exactly one answer. The generator tries every layout; the mirror image, and swapping two blocks of the same weight, count as the same answer.
+- **Difficulty:** Easy has 3 blocks (now and then 4), Medium 4 or 5, and Hard 6, filling every spot, with weights close together.
+- **Random level:** any difficulty, mostly Medium or Hard. **Custom level:** pick the difficulty.
 
 An unfinished game saves itself whenever you leave it: the back arrow, switching apps, or closing the app. That game's page then shows a Continue button. Starting a new game replaces the saved one.
 

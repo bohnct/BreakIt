@@ -12,8 +12,8 @@ export const games = [
   {
     id: 'blocks',
     title: 'Kelsey Blocked Me In Again!',
-    blurb: 'Slide every block out its door',
-    statsKey: 'games.blocks.stats',
+    blurb: 'Drive your car out of the jam',
+    statsKey: 'games.blocks.cars.stats',
     load: () => import('../games/blocks/index.js'),
   },
   {
@@ -50,6 +50,13 @@ export const games = [
     blurb: 'Sort the cubes before the track jams',
     statsKey: 'games.loop.stats',
     load: () => import('../games/loop/index.js'),
+  },
+  {
+    id: 'balance',
+    title: 'Balance Priorities',
+    blurb: 'Level the scale with every block',
+    statsKey: 'games.balance.stats',
+    load: () => import('../games/balance/index.js'),
   },
 ];
 
