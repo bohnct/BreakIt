@@ -10,17 +10,17 @@
 // border a 2) settles squares neither could alone. Harder levels need more paired steps.
 
 export const DIFFICULTIES = ['easy', 'medium', 'hard'];
-// Board sizes, columns × rows, narrow enough for a phone held upright.
+// Board sizes, columns × rows, narrow enough for a phone held upright. Kept small on purpose
+// (2026-11-26): the user wants quick games that still need thought.
 export const SIZES = {
   tiny: { w: 6, h: 8 },
-  small: { w: 8, h: 10 },
-  medium: { w: 9, h: 12 },
-  large: { w: 10, h: 14 },
-  huge: { w: 11, h: 16 },
+  small: { w: 7, h: 9 },
+  medium: { w: 8, h: 10 },
+  large: { w: 9, h: 11 },
 };
 // Share of squares that hide a mine, and paired steps the solver must need, by difficulty.
-const DENSITY = { easy: 0.13, medium: 0.18, hard: 0.22 };
-const PAIRED = { easy: 0, medium: 3, hard: 8 };
+const DENSITY = { easy: 0.12, medium: 0.15, hard: 0.18 };
+const PAIRED = { easy: 0, medium: 1, hard: 2 };
 
 const rand = k => Math.floor(Math.random() * k);
 

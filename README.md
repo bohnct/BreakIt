@@ -42,8 +42,8 @@ Join each pair of matching dots with a path that moves up, down, left and right.
 The game opens a safe area to start from. Tap to dig, hold a square (or switch to Flag at the top) to flag it, and tap a number whose mines are all flagged to open its other neighbours. Number squares are coloured from green (1) to red (4) and beyond; hidden squares are slate blue. A count at the top shows flags placed out of mines. Digging a mine shows a Boom card: take it back and carry on, or start a new level. Taken-back slips are counted in the stats.
 
 - **Levels:** a logic solver plays every board from the opening area before you see it, and boards it can't clear without guessing are thrown away. It uses simple steps (a number's mines all found, or all its hidden squares must be mines) and paired steps (comparing two overlapping numbers).
-- **Difficulty:** Easy 13% mines. Medium 18%, needing at least 3 paired steps. Hard 22%, needing at least 8.
-- **Sizes:** 6×8, 8×10, 9×12, 10×14 and 11×16, upright for a phone. Random Easy levels are mostly 6×8, now and then 8×10.
+- **Difficulty:** kept light so games are quick but still need thought (eased on 2026-11-26). Easy 12% mines. Medium 15%, needing at least 1 paired step. Hard 18%, needing at least 2.
+- **Sizes:** 6×8, 7×9, 8×10 and 9×11, upright for a phone. Random levels: Easy mostly 6×8, Medium mostly 7×9, Hard mostly 8×10, each with a bigger board now and then.
 - **Random level:** any difficulty, with a bigger board now and then. **Custom level:** pick the size and difficulty.
 
 **Babas Game**: Klondike solitaire.

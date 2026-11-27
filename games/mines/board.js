@@ -8,7 +8,7 @@ import { stats } from './stats.js';
 const HOME = '#/game/mines';
 const SAVE_KEY = 'games.mines.saved';
 // Random levels: board sizes by difficulty, with a bigger board now and then.
-const RANDOM_SIZES = { easy: ['tiny', 'tiny', 'tiny', 'small'], medium: ['small', 'medium', 'medium', 'large'], hard: ['medium', 'large', 'large', 'huge'] };
+const RANDOM_SIZES = { easy: ['tiny', 'tiny', 'tiny', 'small'], medium: ['tiny', 'small', 'small', 'medium'], hard: ['small', 'medium', 'medium', 'large'] };
 // Number squares, from calm to alarming. Hidden squares are slate blue.
 const NUM_COLOURS = [null, '#5cc93f', '#ffd60a', '#ff8c1a', '#e5383b', '#a45ee5', '#ff70b8', '#36d6e7', '#ffffff'];
 const FLAG = '<svg viewBox="0 0 24 24"><path d="M7 3v18" stroke="#000" stroke-width="2.2" stroke-linecap="round"/><path d="M8 4h10l-3 4 3 4H8z" fill="#e5383b"/></svg>';
@@ -18,7 +18,8 @@ const LONG_PRESS = 380; // ms held to flag
 
 export const cap = s => (s ? s[0].toUpperCase() + s.slice(1) : '');
 export const getSavedGame = () => load(SAVE_KEY, null);
-export const sizeLabel = s => `${SIZES[s].w}×${SIZES[s].h}`;
+// Older saves and stats may name a size that no longer exists.
+export const sizeLabel = s => (SIZES[s] ? `${SIZES[s].w}×${SIZES[s].h}` : '');
 const pick = a => a[Math.floor(Math.random() * a.length)];
 
 export function optsFromQuery(query) {
@@ -51,7 +52,7 @@ export function mountBoard(el, query) {
   const cleanups = [];
 
   const timerEl = h('span', { class: 'timer' }, fmtTime(acc / 1000));
-  const bar = header(`${sizeLabel(opts.size)} · ${cap(opts.difficulty)}`, HOME);
+  const bar = header(`${w}×${rows} · ${cap(opts.difficulty)}`, HOME);
   bar.querySelector('.bar-right').append(timerEl);
   const limitEl = h('div', { class: 'limit muted' });
   const showLimit = rem => { limitEl.textContent = rem == null ? '' : `Play time left ${fmtTime(rem / 1000)}`; };

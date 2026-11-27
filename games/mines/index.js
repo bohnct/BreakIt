@@ -27,7 +27,7 @@ function renderLanding(el) {
     h('nav', { class: 'list' },
       saved && h('a', { class: 'btn big continue', href: `${HOME}/play?resume=1&k=${Date.now()}` },
         h('span', {}, 'Continue'),
-        h('span', { class: 'continue-sub' }, `${sizeLabel(saved.opts.size)} · ${cap(saved.opts.difficulty)} · ${fmtTime(saved.acc / 1000)}`)),
+        h('span', { class: 'continue-sub' }, `${saved.level.w}×${saved.level.h} · ${cap(saved.opts.difficulty)} · ${fmtTime(saved.acc / 1000)}`)),
       h('a', { class: 'btn big', href: `${HOME}/play?mode=random` }, 'Random level'),
       h('a', { class: 'btn big', href: `${HOME}/custom` }, 'Custom level'),
       h('a', { class: 'btn big ghost', href: `${HOME}/stats` }, 'Stats')),
@@ -49,7 +49,7 @@ function renderCustom(el) {
     h('section', { class: 'card' },
       h('h2', {}, 'Difficulty'),
       chips(DIFFICULTIES.map(d => ({ value: d, label: cap(d) })), cfg.difficulty, 'Difficulty', v => { cfg.difficulty = v; }),
-      h('p', { class: 'muted' }, 'Easy: 13% mines, simple steps. Medium: 18% mines. Hard: 22% mines, and many squares can only be worked out by comparing two numbers.')),
+      h('p', { class: 'muted' }, 'Easy: 12% mines, simple steps. Medium: 15% mines, and at least one square you can only work out by comparing two numbers. Hard: 18% mines, and a few of those.')),
     h('div', { class: 'foot' },
       h('button', { class: 'btn big', onclick: () => {
         save(CUSTOM_KEY, cfg);
