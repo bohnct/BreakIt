@@ -411,6 +411,26 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .lk-hint { min-height: 20px; margin: -14px 0 -8px; color: var(--fg); font-size: 14px; text-align: center; }
 .lk-gap { animation: pulse 1s ease-in-out infinite alternate; }
 
+/* Watering the Garden */
+.pp-board { display: block; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.pp-count { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: -10px; }
+.pp-hint { min-height: 20px; margin: -14px 0 -8px; color: var(--fg); font-size: 14px; text-align: center; }
+.pp-board > g > g { cursor: pointer; }
+/* Turn about the tile's centre: the rotating group holds an invisible 1×1 box for that. */
+.pp-rot { transform-box: fill-box; transform-origin: center; transition: transform .16s ease-out; }
+.pp-bg { fill: var(--tile); }
+.pp-pipe { stroke: var(--muted); transition: stroke .2s var(--d, 0s); }
+.pp-hub { fill: var(--muted); transition: fill .2s var(--d, 0s); }
+.wet .pp-pipe { stroke: #3a86ff; }
+.wet .pp-hub { fill: #3a86ff; }
+.locked .pp-bg { stroke: var(--fg); stroke-width: .045; }
+.nudge .pp-rot { animation: pp-nudge .25s; }
+@keyframes pp-nudge { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+.pp-bloom { animation: pp-bloom .35s ease-out backwards; animation-delay: var(--d, 0s); transform-box: fill-box; transform-origin: center; }
+@keyframes pp-bloom { from { transform: scale(.2); opacity: 0; } }
+.pp-leak { animation: pulse .7s ease-in-out infinite alternate; }
+.pp-board.won { pointer-events: none; }
+
 /* No-Guess Mines. --c is one square (set from board.js). */
 .btn.on { background: var(--fg); color: var(--bg); }
 .mn-stage { user-select: none; -webkit-user-select: none; }

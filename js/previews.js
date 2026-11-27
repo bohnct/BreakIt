@@ -139,7 +139,41 @@ function mines() {
   return out;
 }
 
-const SCENES = { pans, blocks, mahjong, links, solitaire, hola, loop, balance, mines };
+function pipes() {
+  // A small garden part-way through: water from the tap fills the pipes that meet, and the
+  // flowers it reaches bloom. A few pipes are still turned the wrong way, so the rest stay dry.
+  const u = 14, x0 = 31, y0 = 7, W = '#3a86ff', R = 4, C = 7;
+  // Masks: 1 up, 2 right, 4 down, 8 left.
+  const g = [[4, 6, 10, 14, 10, 9, 4], [5, 1, 6, 11, 12, 7, 9], [3, 10, 13, 3, 9, 5, 4], [2, 10, 9, 1, 2, 7, 9]];
+  const DR = [-1, 0, 1, 0], DC = [0, 1, 0, -1], src = [1, 3];
+  const wet = new Set([src.join()]), queue = [src];
+  while (queue.length) {
+    const [r, c] = queue.pop();
+    for (let d = 0; d < 4; d++) {
+      const rr = r + DR[d], cc = c + DC[d];
+      if (!(g[r][c] >> d & 1) || rr < 0 || rr >= R || cc < 0 || cc >= C || !(g[rr][cc] >> (d ^ 2) & 1) || wet.has(`${rr},${cc}`)) continue;
+      wet.add(`${rr},${cc}`); queue.push([rr, cc]);
+    }
+  }
+  const petals = ['#ff70b8', '#ffd60a', '#a45ee5', '#ff8c1a'];
+  let tiles = '', pipes = '', plants = '';
+  g.forEach((row, r) => row.forEach((m, c) => {
+    const cx = x0 + c * u + u / 2, cy = y0 + r * u + u / 2, on = wet.has(`${r},${c}`), col = on ? W : 'var(--muted)';
+    tiles += `<rect x="${x0 + c * u + 0.7}" y="${y0 + r * u + 0.7}" width="${u - 1.4}" height="${u - 1.4}" rx="2.4" fill="var(--tile)"/>`;
+    let d = '';
+    for (let k = 0; k < 4; k++) if (m >> k & 1) d += `M${cx} ${cy}L${cx + DC[k] * u / 2} ${cy + DR[k] * u / 2}`;
+    pipes += `<path d="${d}" stroke="${col}" stroke-width="3.4"/><circle cx="${cx}" cy="${cy}" r="1.7" fill="${col}"/>`;
+    if ([1, 2, 4, 8].includes(m)) {
+      plants += on
+        ? [0, 1, 2, 3, 4].map(k => `<circle cx="${(cx + Math.cos(k * 1.2566 - 1.5708) * 1.5).toFixed(2)}" cy="${(cy - 0.5 + Math.sin(k * 1.2566 - 1.5708) * 1.5).toFixed(2)}" r="1.25" fill="${petals[(r + c) % 4]}"/>`).join('') + `<circle cx="${cx}" cy="${cy - 0.5}" r=".9" fill="#ffd60a"/>`
+        : `<circle cx="${cx}" cy="${cy - 0.5}" r="1.4" fill="var(--muted)" stroke="var(--tile)" stroke-width=".5"/>`;
+    }
+  }));
+  const tx = x0 + src[1] * u + u / 2, ty = y0 + src[0] * u + u / 2;
+  return tiles + pipes + plants + `<circle cx="${tx}" cy="${ty}" r="3.4" fill="${W}" stroke="currentColor" stroke-width=".7"/>`;
+}
+
+const SCENES = { pans, blocks, mahjong, links, solitaire, hola, loop, balance, mines, pipes };
 
 export function preview(id) {
   return h('div', { class: 'hero', 'aria-hidden': 'true', html: `<svg viewBox="0 0 160 70" class="hero-art">${SCENES[id]()}</svg>` });
