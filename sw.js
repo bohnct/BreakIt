@@ -1,5 +1,5 @@
 // Offline cache. Add new files to FILES; bump VERSION to drop old caches.
-const VERSION = 'v36';
+const VERSION = 'v37';
 const CACHE = `breakit-${VERSION}`;
 const FILES = [
   './',
@@ -30,10 +30,15 @@ const FILES = [
   'games/loop/engine.js',
   'games/loop/stats.js',
   'games/loop/worker.js',
-  'games/garlic/index.js',
-  'games/garlic/board.js',
-  'games/garlic/engine.js',
-  'games/garlic/stats.js',
+  'games/links/index.js',
+  'games/links/board.js',
+  'games/links/engine.js',
+  'games/links/stats.js',
+  'games/links/worker.js',
+  'games/mines/index.js',
+  'games/mines/board.js',
+  'games/mines/engine.js',
+  'games/mines/stats.js',
   'games/solitaire/index.js',
   'games/solitaire/board.js',
   'games/solitaire/engine.js',

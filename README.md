@@ -30,15 +30,21 @@ Match pairs of identical free tiles to clear the board. A tile is free when noth
 - **Board size:** Small (~36 tiles), Medium (~64) or Large (~96).
 - **Stuck?** Undo, or shuffle the tiles that are left (the shuffle keeps the board clearable).
 
-**Protect My Garlic!**: a remake of Geometry Tower.
-Blocks march in from every side toward the nearest garlic, and each one that reaches a garlic costs hearts (all garlics share them). Every gun sits on its own garlic and fires automatically; tap a block to make them all focus on it. Blocks fade from bright to dim as they take damage, and only the big ones show a number.
+**Colour Links**: join the dots (replaced Protect My Garlic! on 2026-11-26).
+Join each pair of matching dots with a path that moves up, down, left and right. Paths can't cross or share a square, and together they must cover the whole board. Drag from a dot to draw, or from the middle of a path to redraw it from there. Drawing over another path cuts it short, and it comes back if you back off. A count at the top shows pairs joined (like 3/7). Undo and Restart sit at the top.
 
-- **Shop:** between waves, coins from kills buy a shotgun (short range), sniper (whole map) or machine gun (long range), each on a new garlic. Faint dashed rings on the map show each gun's range. Each gun also has damage and rate-of-fire upgrades (every fifth damage upgrade also lets its bullets pass through one more block), and you can heal.
-- **Crowds:** waves are made of many slow, fairly weak blocks rather than a few fast tough ones, so the map stays busy. Each block drops half the coins it used to; the balance was tuned with a shopping bot to match the earlier win rates. Nothing carries over between levels, and you always start with one garlic and a handgun.
-- **Enemies:** scouts (fast), blocks, brutes (tough), splitters (break into scouts) and a boss on the last wave.
-- **Difficulty:** sets enemy health, numbers and speed, how quickly they get stronger each wave, the garlic's hearts, and the number of waves (Easy 15, Medium 20, Hard 25; custom levels allow 10 to 40).
-- **Random level:** Medium or Hard.
-- **Custom level:** pick the difficulty, number of waves, and whether brutes, splitters and the boss appear.
+- **Levels:** generated on the device. The board is carved into snaking paths that never run alongside themselves, and a solver counts the ways to join the dots. While it finds a second answer, a path is split where the two answers differ, until only one answer is left. So every level can be solved by reasoning.
+- **Difficulty:** fewer pairs means longer, harder paths (Easy about one pair per row, Hard about three fewer). Of several candidates, Medium and Hard keep the one the solver worked hardest on.
+- **Sizes:** 5×5 to 9×9, with up to nine colours. 10×10 was tried, but with nine colours it almost never comes out with only one answer.
+- **Random level:** any difficulty, with a bigger board now and then. **Custom level:** pick the size and difficulty.
+
+**No-Guess Mines**: minesweeper without luck (added 2026-11-26).
+The game opens a safe area to start from. Tap to dig, hold a square (or switch to Flag at the top) to flag it, and tap a number whose mines are all flagged to open its other neighbours. Number squares are coloured from green (1) to red (4) and beyond; hidden squares are slate blue. A count at the top shows flags placed out of mines. Digging a mine shows a Boom card: take it back and carry on, or start a new level. Taken-back slips are counted in the stats.
+
+- **Levels:** a logic solver plays every board from the opening area before you see it, and boards it can't clear without guessing are thrown away. It uses simple steps (a number's mines all found, or all its hidden squares must be mines) and paired steps (comparing two overlapping numbers).
+- **Difficulty:** Easy 13% mines. Medium 18%, needing at least 3 paired steps. Hard 22%, needing at least 8.
+- **Sizes:** 8×10, 9×12, 10×14 and 11×16, upright for a phone.
+- **Random level:** any difficulty, with a bigger board now and then. **Custom level:** pick the size and difficulty.
 
 **Babas Game**: Klondike solitaire.
 Tap the deck to turn cards over. Tap a card to send it to the best place, or drag it. Undo is included, and the game finishes itself once every card is face up. Cards use two palette colours to match red and black suits: hearts and diamonds are red, spades and clubs blue.

@@ -24,11 +24,11 @@ export const games = [
     load: () => import('../games/mahjong/index.js'),
   },
   {
-    id: 'garlic',
-    title: 'Protect My Garlic!',
-    blurb: 'Hold off the blocks',
-    statsKey: 'games.garlic.stats',
-    load: () => import('../games/garlic/index.js'),
+    id: 'links',
+    title: 'Colour Links',
+    blurb: 'Join the colours, fill every square',
+    statsKey: 'games.links.stats',
+    load: () => import('../games/links/index.js'),
   },
   {
     id: 'solitaire',
@@ -57,6 +57,13 @@ export const games = [
     blurb: 'Level the scale with every block',
     statsKey: 'games.balance.stats',
     load: () => import('../games/balance/index.js'),
+  },
+  {
+    id: 'mines',
+    title: 'No-Guess Mines',
+    blurb: 'Find every mine by logic alone',
+    statsKey: 'games.mines.stats',
+    load: () => import('../games/mines/index.js'),
   },
 ];
 

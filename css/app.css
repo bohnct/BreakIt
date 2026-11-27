@@ -312,23 +312,6 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .mj-tile.selected { transform: translateY(-4px); box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg), 2px 5px 0 #9c9481; }
 .mj-tile.shake { animation: card-shake .3s; }
 
-/* Garlic game */
-.gt-wrap { position: relative; }
-.gt-canvas { display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
-.gt-shop {
-  position: absolute; left: 6px; right: 6px; bottom: 6px; margin: 0;
-  max-height: calc(100% - 12px); overflow-y: auto;
-  background: var(--bg); border-color: var(--fg);
-  display: flex; flex-direction: column; gap: 8px;
-}
-.gt-shop-head { display: flex; justify-content: space-between; align-items: baseline; }
-.gt-coins { font-variant-numeric: tabular-nums; font-weight: 600; }
-.gt-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); padding-top: 8px; }
-.gt-name { display: flex; flex-direction: column; min-width: 0; }
-.gt-name .muted { font-size: 12px; line-height: 1.3; }
-.gt-btns { display: flex; gap: 6px; }
-.gt-up { flex-direction: column; gap: 0; min-height: 40px; padding: 0 10px; line-height: 1.15; }
-.gt-cost { font-size: 11px; opacity: .7; font-variant-numeric: tabular-nums; }
 .btn:disabled { opacity: .3; cursor: default; }
 .btn:disabled:active { background: transparent; color: var(--fg); }
 
@@ -420,7 +403,30 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hola-hand .sol-card.playable:active { transform: translateY(-4px); }
 .hola-hand .sol-card:not(.playable) { cursor: default; }
 
-/* Toast */
+/* Colour Links */
+.lk-board { display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+.lk-count { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: -10px; }
+.lk-hint { min-height: 20px; margin-top: -10px; }
+
+/* No-Guess Mines. --c is one square (set from board.js). */
+.btn.on { background: var(--fg); color: var(--bg); }
+.mn-stage { user-select: none; -webkit-user-select: none; }
+.mn-count { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: -10px; }
+.mn-grid {
+  display: grid; grid-template-columns: repeat(var(--w), var(--c)); grid-auto-rows: var(--c);
+  touch-action: manipulation; -webkit-touch-callout: none;
+}
+.mn-cell {
+  display: flex; align-items: center; justify-content: center; margin: 1px;
+  border-radius: calc(var(--c) * .22); cursor: pointer;
+  font-weight: 700; font-size: calc(var(--c) * .52); color: #000; font-variant-numeric: tabular-nums;
+}
+.mn-cell.hid { background: #577590; }
+.mn-cell.open:not(.num) { background: transparent; box-shadow: inset 0 0 0 1px var(--line); cursor: default; }
+.mn-cell.boom { background: #e5383b; }
+.mn-cell svg { width: 70%; height: 70%; pointer-events: none; }
+.mn-grid.shake { animation: card-shake .3s; }
+
 /* Balance Priorities. --c is one block square, --w the scale's width (set from board.js). */
 .bp-stage { user-select: none; -webkit-user-select: none; }
 .bp-totals { display: flex; align-items: baseline; gap: 14px; margin-bottom: -6px; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }

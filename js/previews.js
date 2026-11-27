@@ -64,14 +64,18 @@ function mahjong() {
   ].join('');
 }
 
-function garlic() {
-  const bulb = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 -10 C2 -6 8.5 -5.5 7.6 1 C7.2 6 3.2 7 0 7 C-3.2 7 -7.2 6 -7.6 1 C-8.5 -5.5 -2 -6 0 -10Z" fill="#f4efe2" stroke="currentColor" stroke-opacity=".4" stroke-width=".6"/><path d="M0 -8 Q-3 0 -1.4 6.6 M0 -8 Q3 0 1.4 6.6" stroke="#a89878" stroke-width=".7" fill="none"/></g>`;
-  return `${bulb(80, 38, 1.4)}${bulb(64, 50, 1)}${bulb(96, 50, 1)}
-    <rect x="34" y="12" width="9" height="9" rx="2.5" fill="${P.amber}"/>
-    <rect x="120" y="8" width="13" height="13" rx="3.5" fill="${P.red}"/>
-    <rect x="128" y="50" width="6" height="6" rx="2" fill="${P.yellow}"/>
-    <rect x="24" y="46" width="10" height="10" rx="3" fill="#5c8a49"/>
-    <circle cx="92" cy="28" r="1.2" fill="currentColor"/><circle cx="104" cy="22" r="1.2" fill="currentColor"/><circle cx="55" cy="22" r="1.2" fill="currentColor"/>`;
+function links() {
+  // A small finished board: every pair joined, every square covered.
+  const u = 12.4, x0 = 49, y0 = 3, at = k => k * u + u / 2;
+  const cs = ['#e5383b', '#3a86ff', '#5cc93f', '#ffd60a', '#a45ee5', '#ff8c1a'];
+  const routes = [[[0, 0], [0, 4]], [[1, 0], [4, 0]], [[1, 1], [1, 4]], [[2, 1], [2, 4], [4, 4]], [[3, 1], [3, 3]], [[4, 1], [4, 3]]];
+  let out = '';
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) out += `<rect x="${x0 + c * u + 0.6}" y="${y0 + r * u + 0.6}" width="${u - 1.2}" height="${u - 1.2}" rx="2.4" fill="var(--tile)"/>`;
+  routes.forEach((pts, k) => {
+    out += `<polyline points="${pts.map(([r, c]) => `${x0 + at(c)},${y0 + at(r)}`).join(' ')}" fill="none" stroke="${cs[k]}" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    for (const [r, c] of [pts[0], pts[pts.length - 1]]) out += `<circle cx="${x0 + at(c)}" cy="${y0 + at(r)}" r="4.3" fill="${cs[k]}"/>`;
+  });
+  return out;
 }
 
 // Card colours match the card games: red suits red, black suits blue.
@@ -118,7 +122,24 @@ function balance() {
     ${sq(130, 42, P.blue)}${sq(130, 51, P.blue)}${sq(139, 51, P.blue)}${sq(139, 42, P.blue)}`;
 }
 
-const SCENES = { pans, blocks, mahjong, garlic, solitaire, hola, loop, balance };
+function mines() {
+  // A corner of a board part-way through: open numbers, slate hidden squares, one flag.
+  const rows = ['0012HH', '0124FH', '01HHHH', '12HHHH', 'HHHHHH'];
+  const nums = { 1: '#5cc93f', 2: '#ffd60a', 3: '#ff8c1a', 4: '#e5383b' };
+  const u = 12.4, x0 = 43, y0 = 3;
+  let out = '';
+  rows.forEach((row, r) => [...row].forEach((ch, c) => {
+    const x = x0 + c * u, y = y0 + r * u;
+    if (ch === '0') return;
+    const fill = ch === 'H' || ch === 'F' ? '#577590' : nums[ch];
+    out += `<rect x="${x + 0.6}" y="${y + 0.6}" width="${u - 1.2}" height="${u - 1.2}" rx="2.4" fill="${fill}"/>`;
+    if (nums[ch]) out += `<text x="${x + u / 2}" y="${y + u / 2 + 3.2}" font-size="8.5" font-weight="700" text-anchor="middle" fill="#000">${ch}</text>`;
+    if (ch === 'F') out += `<path d="M${x + 4} ${y + 2.6}v7.4" stroke="#000" stroke-width="1.1" stroke-linecap="round"/><path d="M${x + 4.5} ${y + 3}h4.6l-1.4 1.8 1.4 1.8h-4.6z" fill="#e5383b"/>`;
+  }));
+  return out;
+}
+
+const SCENES = { pans, blocks, mahjong, links, solitaire, hola, loop, balance, mines };
 
 export function preview(id) {
   return h('div', { class: 'hero', 'aria-hidden': 'true', html: `<svg viewBox="0 0 160 70" class="hero-art">${SCENES[id]()}</svg>` });
