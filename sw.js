@@ -1,5 +1,5 @@
 // Offline cache. Add new files to FILES; bump VERSION to drop old caches.
-const VERSION = 'v37';
+const VERSION = 'v38';
 const CACHE = `breakit-${VERSION}`;
 const FILES = [
   './',

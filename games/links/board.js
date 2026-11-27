@@ -95,7 +95,7 @@ export function mountBoard(el, query) {
       h('button', { class: 'btn', onclick: () => undo() }, 'Undo'),
       h('button', { class: 'btn', onclick: () => restart() }, 'Restart'));
     stage.classList.add('lk-stage');
-    stage.replaceChildren(controls, countEl, svg, hintEl);
+    stage.replaceChildren(controls, countEl, hintEl, svg);
 
     const size = () => {
       W = Math.floor(Math.min(viewWidth() - 32, 528, Math.max(260, viewHeight() - 250)));
@@ -115,12 +115,19 @@ export function mountBoard(el, query) {
 
     function render() {
       const own = ownerMap();
+      const covered = i => own[i] >= 0 && paths[own[i]].length > 1;
+      let done = 0, filled = 0;
+      for (let c = 0; c < K; c++) if (isLinked(c)) done++;
+      for (let i = 0; i < N; i++) if (covered(i)) filled++;
+      // Every pair joined but squares left over: the level isn't solved yet, so point at the gaps.
+      const gaps = done === K && filled < N && !drag;
       let out = '';
       for (let i = 0; i < N; i++) {
         const x = i % n, y = Math.floor(i / n);
         out += `<rect x="${x + 0.05}" y="${y + 0.05}" width=".9" height=".9" rx=".18" fill="var(--tile)"/>`;
         // A faint wash of the path's colour on every square it covers, so gaps stand out.
-        if (own[i] >= 0 && paths[own[i]].length > 1) out += `<rect x="${x + 0.05}" y="${y + 0.05}" width=".9" height=".9" rx=".18" fill="${colours[own[i]]}" fill-opacity=".24"/>`;
+        if (covered(i)) out += `<rect x="${x + 0.05}" y="${y + 0.05}" width=".9" height=".9" rx=".18" fill="${colours[own[i]]}" fill-opacity=".24"/>`;
+        else if (gaps) out += `<rect class="lk-gap" x="${x + 0.1}" y="${y + 0.1}" width=".8" height=".8" rx=".15" fill="none" stroke="var(--fg)" stroke-width=".06"/>`;
       }
       paths.forEach((p, c) => {
         if (p.length < 2) return;
@@ -131,11 +138,8 @@ export function mountBoard(el, query) {
         for (const i of [a, b]) out += `<circle cx="${(i % n) + 0.5}" cy="${Math.floor(i / n) + 0.5}" r=".34" fill="${colours[c]}"/>`;
       });
       svg.innerHTML = out;
-      let done = 0, filled = 0;
-      for (let c = 0; c < K; c++) if (isLinked(c)) done++;
-      for (let i = 0; i < N; i++) if (own[i] >= 0 && paths[own[i]].length > 1) filled++;
       countEl.textContent = `${done}/${K}`;
-      hintEl.textContent = done === K && filled < N ? 'Fill every square' : '';
+      hintEl.textContent = gaps ? `All joined, but ${N - filled === 1 ? '1 square is' : `${N - filled} squares are`} still empty` : '';
       if (!over && !drag && done === K && filled === N) finish();
     }
 

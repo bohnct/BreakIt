@@ -406,7 +406,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 /* Colour Links */
 .lk-board { display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
 .lk-count { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-bottom: -10px; }
-.lk-hint { min-height: 20px; margin-top: -10px; }
+.lk-hint { min-height: 20px; margin: -14px 0 -8px; color: var(--fg); font-size: 14px; text-align: center; }
+.lk-gap { animation: pulse 1s ease-in-out infinite alternate; }
 
 /* No-Guess Mines. --c is one square (set from board.js). */
 .btn.on { background: var(--fg); color: var(--bg); }
