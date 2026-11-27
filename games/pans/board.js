@@ -264,7 +264,8 @@ export function mountBoard(el, query) {
       playtimer.stop();
       recordWin({ n, d: difficulty, s: seconds, m: mode });
       grid.classList.add('won');
-      stage.querySelector('.controls')?.remove();
+      const controls = stage.querySelector('.controls');
+      if (controls) controls.hidden = true; // hidden, not removed, so the board stays put
       const nextHref = mode === 'custom'
         ? `${HOME}/play?mode=custom&n=${n}&d=${difficulty}&k=${Date.now()}`
         : `${HOME}/play?mode=random&k=${Date.now()}`;

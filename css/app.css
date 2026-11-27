@@ -229,6 +229,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 /* Game buttons (Undo, Restart, Pause…) sit at the top, above the board, in every game. */
 .controls { display: flex; gap: 10px; width: 100%; max-width: 528px; order: -1; }
 .controls .btn { flex: 1; min-height: 40px; }
+/* Hidden game buttons (e.g. once a level is won) keep their space, so the board never jumps. */
+.controls[hidden], .controls .btn[hidden] { display: flex !important; visibility: hidden; pointer-events: none; }
 
 /* End-of-game card floats over the board so it's always on screen. */
 .win {
@@ -395,8 +397,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
    cards and against both themes. */
 .hola .sol-card.win-card { box-shadow: 0 0 0 2px var(--bg), 0 0 0 5px #ffd60a; z-index: 5; }
 .hola-msg { min-height: 22px; text-align: center; font-size: 15px; }
-.hola-actions { display: flex; gap: 10px; justify-content: center; min-height: 0; }
-.hola-actions:empty { display: none; }
+/* Always as tall as its buttons, so your hand doesn't jump when Let it go / Fight appear. */
+.hola-actions { display: flex; gap: 10px; justify-content: center; min-height: 44px; }
 .hola-actions .btn { flex: 1; max-width: 200px; }
 .hola-hand { display: flex; justify-content: center; gap: 8px; min-height: var(--ch); }
 .hola-hand .sol-card.playable { cursor: pointer; }

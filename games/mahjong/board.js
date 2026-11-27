@@ -71,7 +71,7 @@ export function mountBoard(el, query) {
   const boardEl = h('div', { class: 'mj-board' });
   const els = tiles.map((t, i) => h('div', { class: 'mj-tile', 'data-i': i, html: faceSvg(t.face) }));
   boardEl.append(...els);
-  const shuffleBtn = h('button', { class: 'btn', hidden: true, onclick: () => doShuffle() }, 'Shuffle');
+  const shuffleBtn = h('button', { class: 'btn', disabled: true, onclick: () => doShuffle() }, 'Shuffle');
   const controls = h('div', { class: 'controls' },
     h('button', { class: 'btn', onclick: () => undo() }, 'Undo'),
     shuffleBtn,
@@ -116,7 +116,7 @@ export function mountBoard(el, query) {
       : canShuffle ? 'No matches left: shuffle the tiles, or undo.'
       : 'These tiles can\'t all be cleared now. Undo a few moves and try different pairs.';
     status.classList.toggle('stuck', stuck);
-    shuffleBtn.hidden = !canShuffle;
+    shuffleBtn.disabled = !canShuffle; // greyed out rather than hidden, so the buttons never move
   }
 
   // --- Play ---
