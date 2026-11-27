@@ -12,6 +12,7 @@
 export const DIFFICULTIES = ['easy', 'medium', 'hard'];
 // Board sizes, columns × rows, narrow enough for a phone held upright.
 export const SIZES = {
+  tiny: { w: 6, h: 8 },
   small: { w: 8, h: 10 },
   medium: { w: 9, h: 12 },
   large: { w: 10, h: 14 },

@@ -43,7 +43,7 @@ The game opens a safe area to start from. Tap to dig, hold a square (or switch t
 
 - **Levels:** a logic solver plays every board from the opening area before you see it, and boards it can't clear without guessing are thrown away. It uses simple steps (a number's mines all found, or all its hidden squares must be mines) and paired steps (comparing two overlapping numbers).
 - **Difficulty:** Easy 13% mines. Medium 18%, needing at least 3 paired steps. Hard 22%, needing at least 8.
-- **Sizes:** 8×10, 9×12, 10×14 and 11×16, upright for a phone.
+- **Sizes:** 6×8, 8×10, 9×12, 10×14 and 11×16, upright for a phone. Random Easy levels are mostly 6×8, now and then 8×10.
 - **Random level:** any difficulty, with a bigger board now and then. **Custom level:** pick the size and difficulty.
 
 **Babas Game**: Klondike solitaire.
