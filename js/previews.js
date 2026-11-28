@@ -155,7 +155,7 @@ function pipes() {
       wet.add(`${rr},${cc}`); queue.push([rr, cc]);
     }
   }
-  const petals = ['#ff70b8', '#ffd60a', '#a45ee5', '#ff8c1a'];
+  const petals = ['#ff70b8', '#ffffff', '#a45ee5', '#ff8c1a'];
   let tiles = '', pipes = '', plants = '';
   g.forEach((row, r) => row.forEach((m, c) => {
     const cx = x0 + c * u + u / 2, cy = y0 + r * u + u / 2, on = wet.has(`${r},${c}`), col = on ? W : 'var(--muted)';
@@ -164,9 +164,11 @@ function pipes() {
     for (let k = 0; k < 4; k++) if (m >> k & 1) d += `M${cx} ${cy}L${cx + DC[k] * u / 2} ${cy + DR[k] * u / 2}`;
     pipes += `<path d="${d}" stroke="${col}" stroke-width="3.4"/><circle cx="${cx}" cy="${cy}" r="1.7" fill="${col}"/>`;
     if ([1, 2, 4, 8].includes(m)) {
-      plants += on
-        ? [0, 1, 2, 3, 4].map(k => `<circle cx="${(cx + Math.cos(k * 1.2566 - 1.5708) * 1.5).toFixed(2)}" cy="${(cy - 0.5 + Math.sin(k * 1.2566 - 1.5708) * 1.5).toFixed(2)}" r="1.25" fill="${petals[(r + c) % 4]}"/>`).join('') + `<circle cx="${cx}" cy="${cy - 0.5}" r=".9" fill="#ffd60a"/>`
-        : `<circle cx="${cx}" cy="${cy - 0.5}" r="1.4" fill="var(--muted)" stroke="var(--tile)" stroke-width=".5"/>`;
+      // Same look as the game: a patch of soil with a thirsty sprout, or a flower once watered.
+      plants += `<g transform="translate(${cx} ${cy}) scale(${u})">` + (on
+        ? [0, 1, 2, 3, 4, 5].map(k => `<ellipse cy="-.12" rx=".075" ry=".115" transform="translate(0 -.03) rotate(${k * 60})" fill="${petals[(r + c) % 4]}" stroke="#000" stroke-opacity=".28" stroke-width=".018"/>`).join('') +
+          `<circle cy="-.03" r=".065" fill="#ffd60a"/>`
+        : `<circle r=".215" fill="#4a3426" stroke="var(--muted)" stroke-width=".04"/><path d="M0 .1C0 -.06 .02 -.12 .1 -.12" fill="none" stroke="#b5a46a" stroke-width=".06" stroke-linecap="round"/>`) + '</g>';
     }
   }));
   const tx = x0 + src[1] * u + u / 2, ty = y0 + src[0] * u + u / 2;

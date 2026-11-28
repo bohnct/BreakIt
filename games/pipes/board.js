@@ -10,7 +10,7 @@ const SAVE_KEY = 'games.pipes.saved';
 // Random levels: garden sizes by difficulty, with a bigger garden now and then.
 const RANDOM_SIZES = { easy: [5, 5, 6, 6, 7], medium: [6, 6, 7, 7, 8], hard: [6, 7, 7, 8, 9] };
 const WATER = '#3a86ff';
-const PETALS = ['#ff70b8', '#ffd60a', '#e5383b', '#a45ee5', '#ff8c1a'];
+const PETALS = ['#ff70b8', '#ffffff', '#e5383b', '#a45ee5', '#ff8c1a'];
 const HOLD_MS = 450;
 
 export const cap = s => (s ? s[0].toUpperCase() + s.slice(1) : '');
@@ -68,19 +68,27 @@ function pieceSvg(mask) {
     `<circle class="pp-hub" r=".13"/>`;
 }
 
-// A plant on an end piece: a wilted bud while dry, a flower once watered.
+// A plant on an end piece, growing from a patch of soil where the pipe ends:
+// a drooping, thirsty sprout while dry, an open flower once watered.
+const SOIL = `<circle r=".2" fill="#4a3426"/><circle cx="-.07" cy=".06" r=".025" fill="#6b4c37"/><circle cx=".08" cy=".09" r=".02" fill="#6b4c37"/>`;
+const SPROUT = `<g fill="none" stroke="#b5a46a" stroke-width=".045" stroke-linecap="round">` +
+  `<path d="M0 .1C0 -.06 .02 -.12 .1 -.12"/></g>` +
+  `<g fill="#b5a46a"><path d="M.01 .02C-.07 -.02 -.14 .02 -.16 .09C-.09 .1 -.03 .07 .01 .02Z"/>` +
+  `<path d="M.1 -.12C.15 -.11 .16 -.05 .13 0C.09 -.03 .08 -.09 .1 -.12Z"/></g>`;
 function plantSvg(x, y, wet, colour, bloom) {
-  const leaves = `<ellipse cx="-.11" cy=".08" rx=".1" ry=".05" transform="rotate(-30 -.11 .08)"/><ellipse cx=".11" cy=".08" rx=".1" ry=".05" transform="rotate(30 .11 .08)"/>`;
-  if (!wet) {
-    return `<g transform="translate(${x} ${y})"><g fill="var(--muted)">${leaves}</g><circle cy="-.04" r=".09" fill="var(--muted)" stroke="var(--tile)" stroke-width=".03"/></g>`;
-  }
+  const ring = wet ? WATER : 'var(--muted)';
+  const base = `<circle r=".215" fill="none" stroke="${ring}" stroke-width=".04"/>${SOIL}`;
+  if (!wet) return `<g transform="translate(${x} ${y})">${base}${SPROUT}</g>`;
   let petals = '';
-  for (let k = 0; k < 5; k++) {
-    const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
-    petals += `<circle cx="${(Math.cos(a) * 0.1).toFixed(3)}" cy="${(Math.sin(a) * 0.1 - 0.04).toFixed(3)}" r=".085"/>`;
+  for (let k = 0; k < 6; k++) {
+    petals += `<ellipse cy="-.12" rx=".075" ry=".115" transform="rotate(${k * 60})"/>`;
   }
-  return `<g transform="translate(${x} ${y})"><g class="${bloom ? 'pp-bloom' : ''}"${bloom ? ` style="--d:${bloom}ms"` : ''}>` +
-    `<g fill="#5cc93f">${leaves}</g><g fill="${colour}">${petals}</g><circle cy="-.04" r=".06" fill="#ffd60a" stroke="#000" stroke-opacity=".25" stroke-width=".02"/></g></g>`;
+  const leaves = `<path d="M0 .02C.1 .02 .22 .1 .25 .2C.13 .22 .04 .14 0 .02Z"/><path d="M0 .02C-.1 .02 -.22 .1 -.25 .2C-.13 .22 -.04 .14 0 .02Z"/>`;
+  return `<g transform="translate(${x} ${y})">${base}<g class="${bloom ? 'pp-bloom' : ''}"${bloom ? ` style="--d:${bloom}ms"` : ''}>` +
+    `<g fill="#4fb83a" stroke="#2d7a20" stroke-width=".015">${leaves}</g>` +
+    `<g transform="translate(0 -.03)"><g fill="${colour}" stroke="#000" stroke-opacity=".28" stroke-width=".018">${petals}</g>` +
+    `<g fill="#fff" opacity=".35" transform="rotate(30)"><ellipse cy="-.13" rx=".025" ry=".05"/></g>` +
+    `<circle r=".065" fill="#ffd60a" stroke="#b8860b" stroke-width=".018"/><circle cx="-.02" cy="-.02" r=".018" fill="#fff3a6"/></g></g></g>`;
 }
 
 // The tap: a round water tank with a drop on it.
