@@ -67,7 +67,7 @@ function mahjong() {
 function links() {
   // A small finished board: every pair joined, every square covered.
   const u = 12.4, x0 = 49, y0 = 3, at = k => k * u + u / 2;
-  const cs = ['#e5383b', '#3a86ff', '#5cc93f', '#ffd60a', '#a45ee5', '#ff8c1a'];
+  const cs = ['#f94144', '#43aa8b', '#f9c74f', '#577590', '#90be6d', '#f3722c'];
   const routes = [[[0, 0], [0, 4]], [[1, 0], [4, 0]], [[1, 1], [1, 4]], [[2, 1], [2, 4], [4, 4]], [[3, 1], [3, 3]], [[4, 1], [4, 3]]];
   let out = '';
   for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) out += `<rect x="${x0 + c * u + 0.6}" y="${y0 + r * u + 0.6}" width="${u - 1.2}" height="${u - 1.2}" rx="2.4" fill="var(--tile)"/>`;
@@ -125,7 +125,7 @@ function balance() {
 function mines() {
   // A corner of a board part-way through: open numbers, slate hidden squares, one flag.
   const rows = ['0012HH', '0124FH', '01HHHH', '12HHHH', 'HHHHHH'];
-  const nums = { 1: '#5cc93f', 2: '#ffd60a', 3: '#ff8c1a', 4: '#e5383b' };
+  const nums = { 1: '#90be6d', 2: '#f9c74f', 3: '#f8961e', 4: '#f94144' };
   const u = 12.4, x0 = 43, y0 = 3;
   let out = '';
   rows.forEach((row, r) => [...row].forEach((ch, c) => {
@@ -134,7 +134,7 @@ function mines() {
     const fill = ch === 'H' || ch === 'F' ? '#577590' : nums[ch];
     out += `<rect x="${x + 0.6}" y="${y + 0.6}" width="${u - 1.2}" height="${u - 1.2}" rx="2.4" fill="${fill}"/>`;
     if (nums[ch]) out += `<text x="${x + u / 2}" y="${y + u / 2 + 3.2}" font-size="8.5" font-weight="700" text-anchor="middle" fill="#000">${ch}</text>`;
-    if (ch === 'F') out += `<path d="M${x + 4} ${y + 2.6}v7.4" stroke="#000" stroke-width="1.1" stroke-linecap="round"/><path d="M${x + 4.5} ${y + 3}h4.6l-1.4 1.8 1.4 1.8h-4.6z" fill="#e5383b"/>`;
+    if (ch === 'F') out += `<path d="M${x + 4} ${y + 2.6}v7.4" stroke="#000" stroke-width="1.1" stroke-linecap="round"/><path d="M${x + 4.5} ${y + 3}h4.6l-1.4 1.8 1.4 1.8h-4.6z" fill="#f94144"/>`;
   }));
   return out;
 }

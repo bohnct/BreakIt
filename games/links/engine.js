@@ -14,7 +14,7 @@ export const DIFFICULTIES = ['easy', 'medium', 'hard'];
 // 10×10 was tried: with only nine colours it almost never pins down to one answer.
 export const SIZES = [5, 6, 7, 8, 9];
 // Colours told apart at a glance, most different first. A board never has more pairs than this.
-export const COLOURS = ['#e5383b', '#ffd60a', '#3a86ff', '#5cc93f', '#ff8c1a', '#a45ee5', '#ff70b8', '#36d6e7', '#a0703a'];
+export const COLOURS = ['#f94144', '#43aa8b', '#f9c74f', '#577590', '#90be6d', '#f3722c', '#f8961e', '#4d908e', '#277da1'];
 
 const rand = k => Math.floor(Math.random() * k);
 const shuffle = a => {

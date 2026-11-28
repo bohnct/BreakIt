@@ -1,13 +1,12 @@
-// High-contrast colours for games where telling cubes apart is the whole puzzle (Cleaning Up,
-// Kelsey Blocked Me In Again!). Based on the app palette, but pushed further apart: red, orange
-// and yellow are separated in brightness as well as hue, blue is brighter, and purple replaces
-// teal, which was too close to green.
+// Colours for games where telling pieces apart is the whole puzzle (Cleaning Up, Folding Laundry).
+// The six colours from the app palette that are furthest apart from each other, so these games
+// match the flat look of the card games and Carter, Stop Hiding My Stuff!
 // Ordered so that the first few chosen for a level are the most different from each other.
 export const SORT_COLOURS = [
-  '#e5383b', // red
-  '#ffd60a', // yellow
-  '#3a86ff', // blue
-  '#5cc93f', // green
-  '#ff8c1a', // orange
-  '#a45ee5', // purple
+  '#f94144', // red
+  '#43aa8b', // teal
+  '#f9c74f', // yellow
+  '#577590', // slate blue
+  '#f9844a', // coral
+  '#90be6d', // green
 ];

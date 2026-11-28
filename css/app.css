@@ -395,7 +395,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .hola .sol-card.dim { filter: saturate(.25) brightness(.7); }
 /* The winning card on the table: a bright yellow border that stands out against red and blue
    cards and against both themes. */
-.hola .sol-card.win-card { box-shadow: 0 0 0 2px var(--bg), 0 0 0 5px #ffd60a; z-index: 5; }
+.hola .sol-card.win-card { box-shadow: 0 0 0 2px var(--bg), 0 0 0 5px #f9c74f; z-index: 5; }
 .hola-msg { min-height: 22px; text-align: center; font-size: 15px; }
 /* Always as tall as its buttons, so your hand doesn't jump when Let it go / Fight appear. */
 .hola-actions { display: flex; gap: 10px; justify-content: center; min-height: 44px; }
@@ -446,7 +446,7 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 }
 .mn-cell.hid { background: #577590; }
 .mn-cell.open:not(.num) { background: transparent; box-shadow: inset 0 0 0 1px var(--line); cursor: default; }
-.mn-cell.boom { background: #e5383b; }
+.mn-cell.boom { background: #f94144; }
 .mn-cell svg { width: 70%; height: 70%; pointer-events: none; }
 .mn-grid.shake { animation: card-shake .3s; }
 

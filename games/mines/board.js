@@ -10,8 +10,8 @@ const SAVE_KEY = 'games.mines.saved';
 // Random levels: board sizes by difficulty, with a bigger board now and then.
 const RANDOM_SIZES = { easy: ['tiny', 'tiny', 'tiny', 'small'], medium: ['tiny', 'small', 'small', 'medium'], hard: ['small', 'medium', 'medium', 'large'] };
 // Number squares, from calm to alarming. Hidden squares are slate blue.
-const NUM_COLOURS = [null, '#5cc93f', '#ffd60a', '#ff8c1a', '#e5383b', '#a45ee5', '#ff70b8', '#36d6e7', '#ffffff'];
-const FLAG = '<svg viewBox="0 0 24 24"><path d="M7 3v18" stroke="#000" stroke-width="2.2" stroke-linecap="round"/><path d="M8 4h10l-3 4 3 4H8z" fill="#e5383b"/></svg>';
+const NUM_COLOURS = [null, '#90be6d', '#f9c74f', '#f8961e', '#f94144', '#f3722c', '#43aa8b', '#4d908e', '#ffffff'];
+const FLAG = '<svg viewBox="0 0 24 24"><path d="M7 3v18" stroke="#000" stroke-width="2.2" stroke-linecap="round"/><path d="M8 4h10l-3 4 3 4H8z" fill="#f94144"/></svg>';
 const MINE = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="#000"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>';
 const HIDDEN = 0, OPEN = 1, FLAGGED = 2;
 const LONG_PRESS = 380; // ms held to flag
