@@ -80,6 +80,13 @@ A handful of blocks, shaped like Tetris pieces, sit in a tray. Put every one of 
 - **Difficulty:** Easy has 3 blocks (now and then 4), Medium 4 or 5, and Hard 6, filling every spot, with weights close together.
 - **Random level:** any difficulty, mostly Medium or Hard. **Custom level:** pick the difficulty.
 
+**Watering the Garden**: turn the pipes (added 2026-11-27).
+The garden is tiled with pipe pieces: ends, straights, bends and tees. Water flows from the tap through any pipes that meet. Tap a pipe to turn it a quarter turn clockwise, and hold one to lock it (hold again to unlock). Every pipe must fill with water and no end may be left open, leaking; every end piece is a plant, and it flowers once the water reaches it. Pipes never form a loop. A count at the top shows plants watered (like 9/17). Undo and Restart sit at the top.
+
+- **Levels:** generated on the device. A random tree of pipes is grown over the garden and the pieces are turned at random. A solver then works the level out using only moves it can prove; where it gets stuck, the tree is changed there (one pipe moved) and solved again. So every level has exactly one answer, reachable by reasoning.
+- **Difficulty:** graded by the hardest kind of step the solver needed. Easy: each pipe follows from its neighbours (it can't point at a wall or a closed side). Medium: also no loops and no group of pipes sealed off from the rest. Hard: also thinking a move ahead (trying a pipe one way and seeing it fail), and of several candidates the one needing the most of those is kept.
+- **Sizes:** 5×5 to 9×9. **Random level:** any difficulty, with a bigger garden now and then. **Custom level:** pick the size and difficulty.
+
 An unfinished game saves itself whenever you leave it: the back arrow, switching apps, or closing the app. That game's page then shows a Continue button. Starting a new game replaces the saved one.
 
 No game has a countdown timer. Each one shows how long you've been playing, which feeds your stats.

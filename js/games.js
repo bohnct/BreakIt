@@ -65,6 +65,13 @@ export const games = [
     statsKey: 'games.mines.stats',
     load: () => import('../games/mines/index.js'),
   },
+  {
+    id: 'pipes',
+    title: 'Watering the Garden',
+    blurb: 'Turn the pipes, water every plant',
+    statsKey: 'games.pipes.stats',
+    load: () => import('../games/pipes/index.js'),
+  },
 ];
 
 export const getGame = id => games.find(g => g.id === id);
