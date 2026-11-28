@@ -142,7 +142,7 @@ function mines() {
 function pipes() {
   // A small garden part-way through: water from the tap fills the pipes that meet, and the
   // flowers it reaches bloom. A few pipes are still turned the wrong way, so the rest stay dry.
-  const u = 14, x0 = 31, y0 = 7, W = '#3a86ff', R = 4, C = 7;
+  const u = 14, x0 = 31, y0 = 7, W = '#277da1', R = 4, C = 7;
   // Masks: 1 up, 2 right, 4 down, 8 left.
   const g = [[4, 6, 10, 14, 10, 9, 4], [5, 1, 6, 11, 12, 7, 9], [3, 10, 13, 3, 9, 5, 4], [2, 10, 9, 1, 2, 7, 9]];
   const DR = [-1, 0, 1, 0], DC = [0, 1, 0, -1], src = [1, 3];
@@ -155,7 +155,7 @@ function pipes() {
       wet.add(`${rr},${cc}`); queue.push([rr, cc]);
     }
   }
-  const petals = ['#ff70b8', '#ffffff', '#a45ee5', '#ff8c1a'];
+  const petals = ['#f94144', '#f3722c', '#f9c74f', '#43aa8b'];
   let tiles = '', pipes = '', plants = '';
   g.forEach((row, r) => row.forEach((m, c) => {
     const cx = x0 + c * u + u / 2, cy = y0 + r * u + u / 2, on = wet.has(`${r},${c}`), col = on ? W : 'var(--muted)';
@@ -164,11 +164,10 @@ function pipes() {
     for (let k = 0; k < 4; k++) if (m >> k & 1) d += `M${cx} ${cy}L${cx + DC[k] * u / 2} ${cy + DR[k] * u / 2}`;
     pipes += `<path d="${d}" stroke="${col}" stroke-width="3.4"/><circle cx="${cx}" cy="${cy}" r="1.7" fill="${col}"/>`;
     if ([1, 2, 4, 8].includes(m)) {
-      // Same look as the game: a patch of soil with a thirsty sprout, or a flower once watered.
-      plants += `<g transform="translate(${cx} ${cy}) scale(${u})">` + (on
-        ? [0, 1, 2, 3, 4, 5].map(k => `<ellipse cy="-.12" rx=".075" ry=".115" transform="translate(0 -.03) rotate(${k * 60})" fill="${petals[(r + c) % 4]}" stroke="#000" stroke-opacity=".28" stroke-width=".018"/>`).join('') +
-          `<circle cy="-.03" r=".065" fill="#ffd60a"/>`
-        : `<circle r=".215" fill="#4a3426" stroke="var(--muted)" stroke-width=".04"/><path d="M0 .1C0 -.06 .02 -.12 .1 -.12" fill="none" stroke="#b5a46a" stroke-width=".06" stroke-linecap="round"/>`) + '</g>';
+      // Same flat look as the game: a green bud, or a five-petal flower once watered.
+      plants += on
+        ? [0, 1, 2, 3, 4].map(k => `<circle cx="${(cx + Math.cos(k * 1.2566 - 1.5708) * 1.7).toFixed(2)}" cy="${(cy + Math.sin(k * 1.2566 - 1.5708) * 1.7).toFixed(2)}" r="1.4" fill="${petals[(r + c) % 4]}"/>`).join('') + `<circle cx="${cx}" cy="${cy}" r="1" fill="#f8961e"/>`
+        : `<circle cx="${cx}" cy="${cy}" r="1.8" fill="#90be6d"/>`;
     }
   }));
   const tx = x0 + src[1] * u + u / 2, ty = y0 + src[0] * u + u / 2;

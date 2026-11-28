@@ -421,8 +421,8 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 .pp-bg { fill: var(--tile); }
 .pp-pipe { stroke: var(--muted); transition: stroke .2s var(--d, 0s); }
 .pp-hub { fill: var(--muted); transition: fill .2s var(--d, 0s); }
-.wet .pp-pipe { stroke: #3a86ff; }
-.wet .pp-hub { fill: #3a86ff; }
+.wet .pp-pipe { stroke: #277da1; }
+.wet .pp-hub { fill: #277da1; }
 .locked .pp-bg { stroke: var(--fg); stroke-width: .045; }
 .nudge .pp-rot { animation: pp-nudge .25s; }
 @keyframes pp-nudge { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
